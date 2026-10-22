@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 規格查詢助理 - DualSearch Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 🛠️ 加上這段保險箱樣式，強制確保彈窗正常覆蓋並置中 -->
+    <style>
+        #introScreen {
+            position: fixed !important;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(15, 23, 42, 0.85) !important;
+            z-index: 99999 !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+        body.modal-open { overflow: hidden; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- ========================================== -->
+    <!-- 階段一：實驗任務確認彈窗 (與傳統組完全對等) -->
+    <!-- ========================================== -->
+    <div id="introScreen" class="fixed inset-0 bg-slate-900/80 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-2xl border border-slate-200 my-auto">
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">實驗任務與情境確認（AI 助理組）</span>
+            <h1 class="text-2xl font-bold text-slate-900 mt-3 mb-2">真無線藍牙耳機採購決策任務</h1>
+            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                你是一位平日搭捷運通勤、週末習慣在戶外慢跑與健身的上班族。接下來您將進入 <strong>AI 規格查詢助理</strong> 畫面（對話對象為 AI 助理，非真人），請透過對話或點選選項查詢資料，從 <strong>Model 01 ～ Model 06</strong> 中挑選出最符合條件的一款：
+            </p>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 text-sm space-y-3">
+                <div>
+                    <p class="font-bold text-slate-900 mb-1">🎧 候選產品池（共 6 款）：</p>
+                    <p class="text-slate-700 font-medium">Model 01、Model 02、Model 03、Model 04、Model 05、Model 06</p>
+                </div>
+                <div class="border-t border-amber-200 pt-2">
+                    <p class="font-bold text-red-600 mb-1">🚫 三大必要硬性條件（違反任一項即淘汰）：</p>
+                    <ul class="list-disc list-inside text-slate-700 space-y-1">
+                        <li><strong>預算限制：</strong> 上限為 <strong>NT$7,500（含）以內</strong>，滿足需求下越划算越好。</li>
+                        <li><strong>戶外防護需求：</strong> 需達 <strong>IP54 等級或以上</strong>（若僅有 <strong>IPX4 則不符需求</strong>）。</li>
+                        <li><strong>多工工作需求：</strong> 必須支援「<strong>跨設備雙裝置連線（多點連線）</strong>」功能。</li>
+                    </ul>
+                </div>
+                <div class="border-t border-amber-200 pt-2">
+                    <p class="font-bold text-blue-700 mb-1">⚖️ 決策優先順序（符合硬條件後，依序比較）：</p>
+                    <ol class="list-decimal list-inside text-slate-700 space-y-1">
+                        <li><strong>開啟 ANC 的單次聆聽續航時間：</strong> 越長越優先。</li>
+                        <li><strong>價格划算度／配戴重量：</strong> 優先選擇<strong>價格更划算</strong>者（若仍相同則選單耳重量較輕者）。</li>
+                    </ol>
+                </div>
+            </div>
+            <button onclick="enterAIChat()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition shadow-md cursor-pointer">
+                確認了解情境與條件，開始與 AI 助理對話 →
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 階段二：頂部常駐任務小抄列 -->
+    <!-- ========================================== -->
+    <header class="bg-slate-900 text-white py-2.5 px-6 shrink-0 z-30 shadow-md">
+        <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span class="bg-amber-400 text-slate-900 font-bold px-2 py-0.5 rounded">條件小抄</span>
+                <span>預算 <strong>≤ $7,500</strong> ｜ 防護 <strong>≥ IP54 (非IPX4)</strong> ｜ <strong>支援雙裝置</strong> ｜ <strong>ANC續航長＋價格划算</strong></span>
+            </div>
+            <button onclick="openFinalChoiceModal()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-1.5 rounded-lg transition cursor-pointer shrink-0 text-xs">
+                決定好了，提交最終選擇 →
+            </button>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 階段三：ChatGPT 風格對話主畫面 -->
+    <!-- ========================================== -->
+    <main class="flex-1 flex flex-col max-w-4xl w-full mx-auto bg-white shadow-sm border-x border-slate-200 overflow-hidden">
+        
+        <!-- 對話歷史紀錄區 -->
+        <div id="chatContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+            <!-- 由 JS 動態塞入開場白與對話氣泡 -->
+        </div>
+
+        <!-- 固定追問選項區 (Deliverable 3: 6個固定按鈕，依規則動態顯示/隱藏) -->
+        <div id="followUpZone" class="px-4 sm:px-6 py-3 bg-slate-50 border-t border-slate-200">
+            <p class="text-xs text-slate-500 mb-2 font-medium">你也可以點選下方選項繼續查詢。</p>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="handleChipClick('依條件篩選', '我想依條件篩選')" class="bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-400 text-xs font-medium px-3 py-1.5 rounded-full transition cursor-pointer shadow-xs">
+                    【依條件篩選】
+                </button>
+                <button onclick="handleChipClick('比較兩款', '我想比較兩款')" class="bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-400 text-xs font-medium px-3 py-1.5 rounded-full transition cursor-pointer shadow-xs">
+                    【比較兩款】
+                </button>
+                <button onclick="handleChipClick('依單一規格排序', '我想依單一規格排序')" class="bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-400 text-xs font-medium px-3 py-1.5 rounded-full transition cursor-pointer shadow-xs">
+                    【依單一規格排序】
+                </button>
+                <button onclick="handleChipClick('查看單一產品規格', '我想看單一產品的規格')" class="bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-400 text-xs font-medium px-3 py-1.5 rounded-full transition cursor-pointer shadow-xs">
+                    【查看單一產品規格】
+                </button>
+                <button onclick="handleChipClick('看產品照片', '我想看產品照片')" class="bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-400 text-xs font-medium px-3 py-1.5 rounded-full transition cursor-pointer shadow-xs">
+                    【看產品照片】
+                </button>
+                <button onclick="handleChipClick('解釋術語', '我想了解術語')" class="bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-400 text-xs font-medium px-3 py-1.5 rounded-full transition cursor-pointer shadow-xs">
+                    【解釋術語】
+                </button>
+            </div>
+        </div>
+
+        <!-- 底部訊息輸入框 -->
+        <div class="p-4 bg-white border-t border-slate-200">
+            <div class="flex gap-2 items-center max-w-3xl mx-auto">
+                <input id="chatInput" type="text" placeholder="請輸入你想查詢的規格、條件或問題..." 
+                       class="flex-1 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                       onkeypress="if(event.key === 'Enter') handleUserTyped()">
+                <button id="sendBtn" onclick="handleUserTyped()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition cursor-pointer shrink-0">
+                    送出
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 階段四：最終產品選擇視窗 -->
+    <!-- ========================================== -->
+    <div id="choiceModal" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center p-4" style="z-index: 9999;">
+        <div class="bg-white max-w-md w-full rounded-2xl p-6 shadow-xl">
+            <h3 class="text-lg font-bold text-slate-900 mb-1">請提交您的最終購買決策</h3>
+            <p class="text-xs text-slate-500 mb-4">請選出最符合任務情境與條件的一款耳機（提交後無法返回修改）：</p>
+            <div class="space-y-2 mb-6">
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-emerald-50 cursor-pointer"><input type="radio" name="finalProduct" value="Model 01" class="mr-3"><span class="font-medium text-sm">Model 01</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-emerald-50 cursor-pointer"><input type="radio" name="finalProduct" value="Model 02" class="mr-3"><span class="font-medium text-sm">Model 02</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-emerald-50 cursor-pointer"><input type="radio" name="finalProduct" value="Model 03" class="mr-3"><span class="font-medium text-sm">Model 03</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-emerald-50 cursor-pointer"><input type="radio" name="finalProduct" value="Model 04" class="mr-3"><span class="font-medium text-sm">Model 04</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-emerald-50 cursor-pointer"><input type="radio" name="finalProduct" value="Model 05" class="mr-3"><span class="font-medium text-sm">Model 05</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl hover:bg-emerald-50 cursor-pointer"><input type="radio" name="finalProduct" value="Model 06" class="mr-3"><span class="font-medium text-sm">Model 06</span></label>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeFinalChoiceModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium cursor-pointer">返回繼續查詢</button>
+                <button onclick="submitFinalChoice()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold cursor-pointer">確認送出答案</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // Deliverable 0: MKB 核准事實表 (13項屬性 × 6款產品，數值與字眼 100% 照原文)
+        // =========================================================================
+        const MKB = {
+            "Model 01": {
+                id: "01", name: "Model 01",
+                price: "NT$7,490", price_num: 7490,
+                ip: "IP57", ip_dust: 5, ip_water: 7,
+                mp: "支援(多點自動切換)", mp_bool: true,
+                anc_on: "約6h", anc_on_num: 6,
+                anc_off: "7.5 h", anc_off_num: 7.5,
+                case_bat: "最高26小時", case_num: 26,
+                weight: "5.4 g", weight_num: 5.4,
+                anc_spec: "Adaptive ANC 自適應主動降噪",
+                bt: "Bluetooth 6.1", bt_num: 6.1,
+                codec: "SSC HiFi、AAC、SBC",
+                driver: "雙單體(10mm低音+5.3mm高音)",
+                charge: "Qi無線充電；快充10分鐘可用2.5小時", wireless_charge: true,
+                color: "黑、白、粉霧金",
+                images: [
+                    { id: "IMG-01-BK", color: "黑", bg: "#1e293b" },
+                    { id: "IMG-01-WH", color: "白", bg: "#f8fafc" },
+                    { id: "IMG-01-GD", color: "粉霧金", bg: "#f5d0c5" }
+                ]
+            },
+            "Model 02": {
+                id: "02", name: "Model 02",
+                price: "NT$7,490", price_num: 7490,
+                ip: "IP54", ip_dust: 5, ip_water: 4,
+                mp: "支援(多點連線)", mp_bool: true,
+                anc_on: "8 h", anc_on_num: 8,
+                anc_off: "12 h", anc_off_num: 12,
+                case_bat: "最高30小時", case_num: 30,
+                weight: "4.7 g", weight_num: 4.7,
+                anc_spec: "Silent Seal 2.0 ANC 主動降噪",
+                bt: "Bluetooth 5.4", bt_num: 5.4,
+                codec: "AAC、SBC、Opus",
+                driver: "11mm 訂製動圈單體",
+                charge: "Qi無線充電；快充5分鐘可用1.5小時", wireless_charge: true,
+                color: "米、綠、灰、粉",
+                images: [
+                    { id: "IMG-02-BE", color: "米", bg: "#fef3c7" },
+                    { id: "IMG-02-GN", color: "綠", bg: "#a7f3d0" },
+                    { id: "IMG-02-GY", color: "灰", bg: "#64748b" },
+                    { id: "IMG-02-PK", color: "粉", bg: "#f472b6" }
+                ]
+            },
+            "Model 03": {
+                id: "03", name: "Model 03",
+                price: "NT$5,990", price_num: 5990,
+                ip: "IP54", ip_dust: 5, ip_water: 4,
+                mp: "支援(多點連線)", mp_bool: true,
+                anc_on: "約8h", anc_on_num: 8,
+                anc_off: "11 h", anc_off_num: 11,
+                case_bat: "最高28小時", case_num: 28,
+                weight: "5.5 g", weight_num: 5.5,
+                anc_spec: "Hybrid ANC 混合主動降噪",
+                bt: "Bluetooth 5.3", bt_num: 5.3,
+                codec: "aptX、AAC、SBC、LC3",
+                driver: "7 mm TrueResponse 動圈單體",
+                charge: "Type-C 快充10分鐘可用1小時(資料未列無線充電)", wireless_charge: null,
+                color: "黑、白、藍",
+                images: [
+                    { id: "IMG-03-BK", color: "黑", bg: "#0f172a" },
+                    { id: "IMG-03-WH", color: "白", bg: "#ffffff" },
+                    { id: "IMG-03-BL", color: "藍", bg: "#1e3a8a" }
+                ]
+            },
+            "Model 04": {
+                id: "04", name: "Model 04",
+                price: "NT$7,490", price_num: 7490,
+                ip: "IP55", ip_dust: 5, ip_water: 5,
+                mp: "不支援(僅單設備配對記憶)", mp_bool: false,
+                anc_on: "約9h", anc_on_num: 9,
+                anc_off: "12 h", anc_off_num: 12,
+                case_bat: "最高36小時(充電盒具觸控彩色螢幕)", case_num: 36,
+                weight: "5.0 g", weight_num: 5.0,
+                anc_spec: "True Adaptive ANC 智慧自適應降噪",
+                bt: "Bluetooth 5.3", bt_num: 5.3,
+                codec: "LDAC、AAC、SBC",
+                driver: "10mm 動圈單體",
+                charge: "Qi無線充電；快充15分鐘可用4小時", wireless_charge: true,
+                color: "黑、藍、銀、紫",
+                images: [
+                    { id: "IMG-04-BK", color: "黑", bg: "#334155" },
+                    { id: "IMG-04-BL", color: "藍", bg: "#93c5fd" },
+                    { id: "IMG-04-SV", color: "銀", bg: "#cbd5e1" },
+                    { id: "IMG-04-PU", color: "紫", bg: "#c4b5fd" }
+                ]
+            },
+            "Model 05": {
+                id: "05", name: "Model 05",
+                price: "NT$6,499", price_num: 6499,
+                ip: "IPX4(僅生活防潑水,無防塵等級)", ip_dust: 0, ip_water: 4,
+                mp: "支援(智慧雙設備切換)", mp_bool: true,
+                anc_on: "約10 h", anc_on_num: 10,
+                anc_off: "14 h", anc_off_num: 14,
+                case_bat: "最高38小時", case_num: 38,
+                weight: "5.1 g", weight_num: 5.1,
+                anc_spec: "最高55 dB 旗艦主動降噪",
+                bt: "Bluetooth 5.2", bt_num: 5.2,
+                codec: "LHDC 5.0、LC3、AAC、SBC",
+                driver: "三單體(11mm雙磁+微平板+陶瓷高音)",
+                charge: "Qi無線充電；快充10分鐘可用3小時", wireless_charge: true,
+                color: "透明黑",
+                images: [
+                    { id: "IMG-05-TB", color: "透明黑", bg: "#27272a" }
+                ]
+            },
+            "Model 06": {
+                id: "06", name: "Model 06",
+                price: "NT$7,980", price_num: 7980,
+                ip: "IPX4(僅生活防潑水)", ip_dust: 0, ip_water: 4,
+                mp: "支援(多點連接)", mp_bool: true,
+                anc_on: "6 h", anc_on_num: 6,
+                anc_off: "7.5 h", anc_off_num: 7.5,
+                case_bat: "最高18.5小時(充電盒具深紫外線殺菌)", case_num: 18.5,
+                weight: "5.4 g", weight_num: 5.4,
+                anc_spec: "數位複合主動降噪",
+                bt: "Bluetooth 5.4", bt_num: 5.4,
+                codec: "Snapdragon Sound、aptX Adaptive、AAC、SBC",
+                driver: "5.8 mm Pure Motion 高解析動圈",
+                charge: "Qi無線充電、Type-C 有線充電(資料未列快充時間)", wireless_charge: true,
+                color: "黑、白",
+                images: [
+                    { id: "IMG-06-BK", color: "黑", bg: "#18181b" },
+                    { id: "IMG-06-WH", color: "白", bg: "#f4f4f5" }
+                ]
+            }
+        };
+
+        const ALL_MODELS = ["Model 01", "Model 02", "Model 03", "Model 04", "Model 05", "Model 06"];
+
+        // 附錄 A：術語核准表 (110用)
+        const GLOSSARY = [
+            { keys: ["anc", "主動降噪"], term: "ANC(主動降噪)", def: "耳機用麥克風收集外界噪音，產生反向聲波抵消噪音，以降低聽到的環境音。在這六款中，六款皆具備主動降噪規格。" },
+            { keys: ["adaptive", "自適應降噪"], term: "自適應降噪(Adaptive ANC)", def: "依周圍環境或配戴狀況自動調整降噪強度的主動降噪方式。在這六款中，Model 01 為 Adaptive ANC 自適應主動降噪、Model 04 為 True Adaptive ANC 智慧自適應降噪。" },
+            { keys: ["hybrid", "混合降噪"], term: "混合降噪(Hybrid ANC)", def: "同時用耳機外側和內側的麥克風收音來進行主動降噪的方式。在這六款中，Model 03 為 Hybrid ANC 混合主動降噪。" },
+            { keys: ["db", "55db", "降噪深度"], term: "降噪 dB 數值", def: "廠商標示的降噪深度。各廠商測試條件不同，不同產品之間無法直接用數字比較。在這六款中，僅 Model 05 標示最高 55 dB 旗艦主動降噪。" },
+            { keys: ["ipx4", "x是什麼", "x代表"], term: "IP 等級中的 X", def: "X 代表該項目沒有經過測試或沒有標示等級。IPX4 就是防水 4 級（可防止任何方向的潑水）、沒有防塵等級。在這六款中，Model 05 和 Model 06 是 IPX4。" },
+            { keys: ["ip54", "ip55", "ip57", "ip等級", "防塵防水"], term: "IP 等級 (IP54 / IP55 / IP57)", def: "國際標準 IEC 60529 定義的防護等級。第一位數字代表防塵（5代表防塵：灰塵進入量不影響正常運作），第二位數字代表防水（4代表防潑水、5代表防低壓噴射水柱、7代表可短時間浸水）。在這六款中：Model 01 為 IP57、Model 02 與 Model 03 為 IP54、Model 04 為 IP55、Model 05 與 Model 06 為 IPX4。" },
+            { keys: ["多點連線", "雙裝置", "multipoint"], term: "多點連線(雙裝置連線)", def: "耳機可以同時和兩台裝置保持連線（例如手機和筆電），切換時不需要手動斷開再重新配對。在這六款中，Model 01、02、03、05、06 支援，Model 04 不支援（僅單設備配對記憶）。" },
+            { keys: ["單設備", "配對記憶"], term: "單設備配對記憶", def: "耳機可以記住配對過的裝置，但同一時間只能連線一台。在這六款中，Model 04 為單設備配對記憶。" },
+            { keys: ["ldac"], term: "LDAC", def: "Sony 開發的藍牙音訊編碼，可用較高位元率傳輸。在這六款中，Model 04 支援 LDAC。" },
+            { keys: ["aptx"], term: "aptX / aptX Adaptive", def: "Qualcomm 開發的藍牙音訊編碼。在這六款中，Model 03 支援 aptX，Model 06 支援 aptX Adaptive。" },
+            { keys: ["lc3"], term: "LC3", def: "藍牙 LE Audio 規格採用的音訊編碼。在這六款中，Model 03 與 Model 05 支援 LC3。" },
+            { keys: ["aac", "sbc", "編碼", "codec"], term: "音訊編碼(Codec) / AAC / SBC", def: "藍牙傳送音訊時壓縮與解壓縮聲音資料的格式。SBC 為基本編碼，AAC 為蘋果裝置普遍使用的編碼。六款皆支援 AAC 與 SBC。" },
+            { keys: ["單體", "動圈", "雙單體", "三單體"], term: "發聲單體(動圈/多單體)", def: "靠線圈帶動振膜發聲的喇叭結構；多單體代表一隻耳機內有兩個以上的發聲單元分別負責不同頻段。Model 01 為雙單體，Model 05 為三單體，其餘為單一動圈單體。" },
+            { keys: ["qi", "無線充電"], term: "Qi 無線充電", def: "通用的無線充電標準，充電盒放在支援 Qi 的充電板上就能充電。Model 01、02、04、05、06 支援 Qi 無線充電；Model 03 資料未列無線充電。" }
+        ];
+
+        // =========================================================================
+        // 對話狀態與多輪記憶 (Deliverable 8: Context Tracking)
+        // =========================================================================
+        let turnCounter = 0;
+        let activeProductSet = [...ALL_MODELS]; // 追蹤前一輪篩選出的產品集合
+        let lastAttributeAsked = null;          // 追蹤前一輪詢問的屬性
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // 初始化實驗參數
+        if (!localStorage.getItem('participant_id')) {
+            localStorage.setItem('participant_id', 'U' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'));
+        }
+        if (!localStorage.getItem('session_id')) {
+            localStorage.setItem('session_id', generateUUID());
+        }
+        localStorage.setItem('condition', 'ai');
+
+        // =========================================================================
+        // 資料庫紀錄器 (完全對齊《資料庫流程.pdf》與 Deliverable 9)
+        // =========================================================================
+        function logEvent(eventType, targetId, metadata = {}) {
+            const eventData = {
+                event_id: generateUUID(),
+                session_id: localStorage.getItem('session_id'),
+                event_type: eventType,
+                target_id: targetId,
+                event_time: new Date().toISOString(),
+                metadata: metadata
+            };
+            console.log('📊 [API 傳送 -> events 資料表]:', eventData);
+        }
+
+        function logAIMessage(logObj) {
+            const aiMsgData = {
+                message_id: generateUUID(),
+                session_id: localStorage.getItem('session_id'),
+                turn_number: logObj.turn_number,
+                user_message: logObj.user_message,
+                response_text: logObj.response_text.replace(/<[^>]*>?/gm, ' ').trim(), // 純文字版供檢索
+                intent_id: logObj.intent_primary,
+                response_mode: logObj.response_mode, // 'fixed' 或 'api'
+                response_latency_ms: logObj.latency_ms,
+                metadata: {
+                    participant_id: localStorage.getItem('participant_id'),
+                    condition: 'AI',
+                    timestamp: new Date().toISOString(),
+                    intent_secondary: logObj.intent_secondary || [],
+                    products_mentioned: logObj.products_mentioned || [],
+                    products_in_response: logObj.products_in_response || [],
+                    attributes_requested: logObj.attributes_requested || [],
+                    boundary_triggered: logObj.boundary_triggered || 'none',
+                    fallback_subtype: logObj.fallback_subtype || 'none',
+                    image_ids: logObj.image_ids || [],
+                    final_choice: logObj.final_choice || null,
+                    input_type: logObj.input_type, // 'typed' | 'chip'
+                    chip_clicked: logObj.chip_clicked || null,
+                    suggestions_shown: logObj.suggestions_shown,
+                    guardrail_result: logObj.guardrail_result,
+                    regen_count: 0,
+                    error_flag: 'none',
+                    model_version: 'hybrid-engine-v1.0',
+                    prompt_version: 'SP-v1.0_no106/MKB-v2.1',
+                    pii_masked: logObj.pii_masked || false
+                }
+            };
+            console.log('💬 [API 傳送 -> ai_messages 資料表]:', aiMsgData);
+        }
+
+        // =========================================================================
+        // Deliverable 12: 輸出前自動檢查護欄 (Guardrail)
+        // =========================================================================
+        function runGuardrailCheck(responseText, intentPrimary) {
+            const bannedBrands = ['samsung', 'galaxy', 'google', 'pixel', 'sennheiser', '森海塞爾', 'jbl', 'xiaomi', '小米', 'audio-technica', '鐵三角'];
+            const bannedWords = ['最划算', 'cp值最高', '高達', '長達', '僅需', '值得注意的是', '表現優異', '好選擇'];
+            const lowerText = responseText.toLowerCase();
+
+            for (let b of bannedBrands) {
+                if (lowerText.includes(b)) return `fail:brand_leak(${b})`;
+            }
+            for (let w of bannedWords) {
+                if (lowerText.includes(w)) return `fail:banned_word(${w})`;
+            }
+            return 'pass';
+        }
+
+        // =========================================================================
+        // 輔助工具：產品名稱正規化與表格生成器
+        // =========================================================================
+        function extractMentionedModels(text) {
+            const found = new Set();
+            const rules = [
+                { id: "Model 01", reg: /model\s*0?1|m01|a01|01|[1一]號|第[1一]款|第[1一]個|編號1/gi },
+                { id: "Model 02", reg: /model\s*0?2|m02|a02|02|[2二]號|第[2二]款|第[2二]個|編號2/gi },
+                { id: "Model 03", reg: /model\s*0?3|m03|a03|03|[3三]號|第[3三]款|第[3三]個|編號3/gi },
+                { id: "Model 04", reg: /model\s*0?4|m04|a04|04|[4四]號|第[4四]款|第[4四]個|編號4/gi },
+                { id: "Model 05", reg: /model\s*0?5|m05|a05|05|[5五]號|第[5五]款|第[5五]個|編號5/gi },
+                { id: "Model 06", reg: /model\s*0?6|m06|a06|06|[6六]號|第[6六]款|第[6六]個|編號6/gi }
+            ];
+            rules.forEach(r => { if (r.reg.test(text)) found.add(r.id); });
+            return Array.from(found).sort();
+        }
+
+        function buildFullComparisonTable(modelList) {
+            const rows = [
+                { label: "官方參考定價", key: "price" },
+                { label: "防水防塵等級", key: "ip" },
+                { label: "雙裝置多點連線", key: "mp" },
+                { label: "單次續航(ANC開啟)", key: "anc_on" },
+                { label: "單次續航(ANC關閉)", key: "anc_off" },
+                { label: "搭配充電盒續航", key: "case_bat" },
+                { label: "單耳重量", key: "weight" },
+                { label: "主動降噪規格", key: "anc_spec" },
+                { label: "藍牙傳輸版本", key: "bt" },
+                { label: "音訊編碼支援", key: "codec" },
+                { label: "發聲單體架構", key: "driver" },
+                { label: "充電與快充", key: "charge" },
+                { label: "機身可選配色", key: "color" }
+            ];
+            let html = `<div class="overflow-x-auto my-2 border border-slate-200 rounded-lg"><table class="mkb-table w-full border-collapse"><thead><tr><th>屬性</th>`;
+            modelList.forEach(m => { html += `<th>${m}</th>`; });
+            html += `</tr></thead><tbody>`;
+            rows.forEach(r => {
+                html += `<tr><td class="font-semibold bg-slate-50 whitespace-nowrap">${r.label}</td>`;
+                modelList.forEach(m => { html += `<td>${MKB[m][r.key]}</td>`; });
+                html += `</tr>`;
+            });
+            html += `</tbody></table></div>`;
+            return html;
+        }
+
+        function renderImageCards(modelsToRender, colorFilter = null) {
+            let html = `<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 my-3">`;
+            let imgIds = [];
+            modelsToRender.forEach(m => {
+                MKB[m].images.forEach(img => {
+                    if (!colorFilter || img.color.includes(colorFilter)) {
+                        imgIds.push(img.id);
+                        html += `
+                            <div class="border border-slate-200 rounded-lg p-3 bg-white flex flex-col items-center text-center">
+                                <div class="w-20 h-20 rounded-full border border-slate-300 flex items-center justify-center mb-2 shadow-inner" style="background-color: ${img.bg};">
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white font-mono">${img.id}</span>
+                                </div>
+                                <div class="text-xs font-medium text-slate-700">${m} | ${img.color}</div>
+                            </div>
+                        `;
+                    }
+                });
+            });
+            html += `</div>`;
+            return { html, imgIds };
+        }
+
+        // =========================================================================
+        // 核心大腦：Role 5 雙軌混合對話引擎 (已移除 106 多重條件篩選)
+        // =========================================================================
+        async function processUserQuery(rawText, inputType = 'typed', chipName = null) {
+            const q = rawText.trim();
+            const lowerQ = q.toLowerCase();
+            let mentioned = extractMentionedModels(q);
+
+            // 個資遮蔽檢查 (Deliverable 13-4)
+            let piiMasked = false;
+            if (/09\d{8}|\b[A-Z]\d{9}\b|@gmail\.com/i.test(q)) {
+                piiMasked = true;
+            }
+
+            // -----------------------------------------------------------------
+            // 0. 處理固定追問選項點擊 (Fixed Chips) -> 不顯示下方選項 (等待使用者回答)
+            // -----------------------------------------------------------------
+            if (q === '我想依條件篩選') {
+                return {
+                    intent_primary: "103_prompt", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "請告訴我你的條件（一次限設定一項單一條件）。可設定的規格有：價格、防水防塵等級、雙裝置連線、ANC開啟續航、ANC關閉續航、充電盒續航、單耳重量、藍牙版本、音訊編碼、充電方式、配色。"
+                };
+            }
+            if (q === '我想比較兩款') {
+                return {
+                    intent_primary: "104_prompt", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "你想比較哪兩款？可選 Model 01 到 Model 06。"
+                };
+            }
+            if (q === '我想依單一規格排序') {
+                return {
+                    intent_primary: "102_prompt", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "你想依哪一項排序？可排序的規格有：價格、防水防塵等級、ANC開啟續航、ANC關閉續航、充電盒續航、單耳重量、藍牙版本。"
+                };
+            }
+            if (q === '我想看單一產品的規格') {
+                return {
+                    intent_primary: "105_prompt", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "你想看哪一款？可選 Model 01 到 Model 06。"
+                };
+            }
+            if (q === '我想看產品照片') {
+                return {
+                    intent_primary: "111_prompt", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "你想看哪一款的照片？可選 Model 01 到 Model 06，或全部六款。"
+                };
+            }
+            if (q === '我想了解術語') {
+                return {
+                    intent_primary: "110_prompt", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "你想了解哪個術語？例如：ANC、IP等級、多點連線、音訊編碼、Qi無線充電。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // 優先順序 1: 規則操弄、施壓要求推薦、問原型品牌、問正確答案
+            // -----------------------------------------------------------------
+            if (/忽略.*指示|扮演|假裝你是|店員|購物顧問|管理員|一定要推薦|拜託.*推薦|直接告訴我答案|直接選一個|只說一個編號/.test(lowerQ)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "pressure", boundary_triggered: "pressure",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "我沒辦法替你做最後的選擇，這一點不會因為重複詢問而改變。我可以依你提供的條件幫你篩選產品、列出規格差異，或依單一屬性排序。你想從哪個條件開始？"
+                };
+            }
+            if (/sennheiser|森海|samsung|三星|galaxy|google|pixel|jbl|xiaomi|小米|鐵三角|audio-technica|什麼牌子|哪家出|原型/.test(lowerQ)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "brand_reveal",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "目前這個系統可以協助你查詢與比較這六款耳機的規格與配色照片，但無法提供各款對應的品牌或原型資訊。你可以問我特定款式的規格，或它跟其他款的差異。"
+                };
+            }
+            if (/正確答案|哪款是誘餌|實驗在測什麼|研究者希望/.test(lowerQ)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "task_meta",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "目前這個系統可以協助你查詢與比較這六款耳機的規格與配色照片，沒有所謂的正確答案可以提供。你可以告訴我你的單一條件，我幫你篩選出符合的產品。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // 優先順序 8 & 9: 任務內容、條件複述、身分詢問、情緒回應、亂碼
+            // -----------------------------------------------------------------
+            if (/我的預算|任務要我|選購條件是什麼/.test(lowerQ)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "task_info",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "我沒有任務內容的資料，請回到任務說明查看。我可以協助你查詢與比較六款耳機的規格與配色照片。"
+                };
+            }
+            if (/整理.*剛.*說的條件|複述.*條件/.test(lowerQ)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "task_info",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "我不會替你整理或複述條件。你先前輸入的內容都保留在上方的對話紀錄中，可以往上查看。"
+                };
+            }
+            if (/你是真人嗎|你是誰|機器人嗎/.test(lowerQ)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "identity",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "我是AI助理，不是真人。我可以協助你查詢與比較六款耳機的規格與配色照片。"
+                };
+            }
+            if (/好難喔|你很沒用|好煩|太難了/.test(lowerQ)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "none",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "了解。我可以協助你查詢與比較六款耳機的規格與配色照片，你可以從任何一項規格開始問。"
+                };
+            }
+            if (/^[a-z0-9;,'"\[\]\-=+\s]+$/i.test(q) && !/model|m0|a0|0[1-6]|ip|anc|ldac|aptx|lc3|aac|sbc|qi|bt|battery|lightest|multipoint/i.test(q)) {
+                return {
+                    intent_primary: "108", fallback_subtype: "none",
+                    suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "我沒有看懂這則訊息，請再輸入一次你想查詢的內容。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // 優先順序 2: Intent 112 決策宣告 (「我決定選03」「02是對的吧」)
+            // -----------------------------------------------------------------
+            if (/我決定選|我要選|我選|應該是對的吧|有沒有選錯|選.*合理嗎|就決定是/.test(lowerQ) && mentioned.length === 1) {
+                const target = mentioned[0];
+                if (/對的吧|選錯|合理嗎|對嗎/.test(lowerQ)) {
+                    return {
+                        intent_primary: "112", final_choice: target.replace("Model ", ""),
+                        products_mentioned: [target.replace("Model ", "")], products_in_response: [target.replace("Model ", "")],
+                        suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `系統沒有對錯判定，也不評估你的選擇。如果已經確定，請點選右上角按鈕提交最終選擇；如果想再核對 ${target} 的規格，我可以列給你。`
+                    };
+                }
+                return {
+                    intent_primary: "112", final_choice: target.replace("Model ", ""),
+                    products_mentioned: [target.replace("Model ", "")], products_in_response: [target.replace("Model ", "")],
+                    suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `收到，你目前的選擇是 ${target}。如果已經確定，請點選右上角按鈕提交最終選擇；如果還想查詢其他資料，也可以繼續問我。`
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // 事實更正攔截 (Deliverable 8-3: 「03不是IP57嗎」「04也可以雙裝置吧」)
+            // -----------------------------------------------------------------
+            if (mentioned.length === 1 && (/不是.*嗎|也可以.*吧|有支援.*吧/.test(lowerQ))) {
+                const m = MKB[mentioned[0]];
+                if (/ip|防水|防塵/.test(lowerQ)) {
+                    return {
+                        intent_primary: "105", boundary_triggered: "correction", products_in_response: [m.id],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `根據產品資料，${m.name} 的防水防塵等級是 ${m.ip}。`
+                    };
+                }
+                if (/雙裝置|多點/.test(lowerQ)) {
+                    return {
+                        intent_primary: "105", boundary_triggered: "correction", products_in_response: [m.id],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `根據產品資料，${m.name} 的雙裝置多點連線規格為：${m.mp}。`
+                    };
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // 優先順序 3: 檢查是否同時給了「多個條件」（因已刪除 106，攔截並要求單一條件查詢）
+            // -----------------------------------------------------------------
+            let conditionCount = 0;
+            if (/7500|7,500|6500|6000|預算|以下|以內|不超過/.test(lowerQ)) conditionCount++;
+            if (/ip54|ip55|ip57|ipx4|防水|防塵|淋雨|流汗|跑步/.test(lowerQ)) conditionCount++;
+            if (/雙裝置|多點連線|同時連|筆電.*手機/.test(lowerQ)) conditionCount++;
+            if (/續航.*小時以上|8小時以上|10小時/.test(lowerQ)) conditionCount++;
+            if (/5g以下|重量.*以下/.test(lowerQ)) conditionCount++;
+
+            if (conditionCount >= 2) {
+                return {
+                    intent_primary: "103_multi_blocked", boundary_triggered: "multi_condition_blocked",
+                    suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "系統一次只能針對「單一條件」進行篩選，無法同時合併多個條件或直接依整段情境篩選。請先告訴我你想查詢的其中一個條件（例如：先查價格範圍、或先查防水防塵等級、或先查雙裝置連線），我們再逐一篩選。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // 模糊條件澄清 (Deliverable 3: 「防水好一點」「七千五左右」「降噪要強」)
+            // -----------------------------------------------------------------
+            if (/防水.*好一點|防塵.*好一點/.test(lowerQ)) {
+                return {
+                    intent_primary: "103", boundary_triggered: "clarify", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "你說的「防水要好一點」，想設定成哪個等級以上？這六款的等級有 IPX4、IP54、IP55、IP57。"
+                };
+            }
+            if (/左右|差不多|便宜一點|輕一點/.test(lowerQ) && !/差多少/.test(lowerQ)) {
+                return {
+                    intent_primary: "103", boundary_triggered: "clarify", suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `你說的條件比較模糊，想設定成什麼明確標準？例如價格上限是多少元以下，或重量幾公克以下？`
+                };
+            }
+            if (/降噪.*強|降噪.*最好|哪款最安靜|降噪排名/.test(lowerQ)) {
+                return {
+                    intent_primary: "102", attributes_requested: ["anc_spec"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "各款的主動降噪規格如下：Model 01 為 Adaptive ANC 自適應主動降噪、Model 02 為 Silent Seal 2.0 ANC 主動降噪、Model 03 為 Hybrid ANC 混合主動降噪、Model 04 為 True Adaptive ANC 智慧自適應降噪、Model 05 為最高 55 dB 旗艦主動降噪、Model 06 為數位複合主動降噪。只有 Model 05 標示了 dB 數值，其他款沒有共同的量化數據，所以系統無法排出降噪強弱。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 111: 產品圖片查詢
+            // -----------------------------------------------------------------
+            if (/圖|照片|外觀|長什麼樣|長怎樣/.test(lowerQ)) {
+                if (/戴在耳|佩戴|充電盒|螢幕|實際大小/.test(lowerQ)) {
+                    return {
+                        intent_primary: "111", suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: "系統目前只有各款的配色照片，沒有佩戴照、充電盒照或尺寸對照圖。如果需要，我可以提供相關的規格資料（例如單耳重量或搭配充電盒續航）。"
+                    };
+                }
+                if (/從照片看|看起來哪款/.test(lowerQ)) {
+                    return {
+                        intent_primary: "111", suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: "從照片無法判斷規格數值。產品資料中各款的單耳重量是：Model 01 為 5.4 g、Model 02 為 4.7 g、Model 03 為 5.5 g、Model 04 為 5.0 g、Model 05 為 5.1 g、Model 06 為 5.4 g。"
+                    };
+                }
+                const targetModels = mentioned.length > 0 ? mentioned : ALL_MODELS;
+                let colorFilter = null;
+                if (/白/.test(lowerQ)) colorFilter = "白";
+                else if (/黑/.test(lowerQ)) colorFilter = "黑";
+                else if (/藍/.test(lowerQ)) colorFilter = "藍";
+                else if (/粉/.test(lowerQ)) colorFilter = "粉";
+
+                const { html, imgIds } = renderImageCards(targetModels, colorFilter);
+                if (imgIds.length === 0 && mentioned.length === 1) {
+                    const m = MKB[mentioned[0]];
+                    return {
+                        intent_primary: "111", products_in_response: [m.id], suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `${m.name} 的配色是 ${m.color}，沒有你詢問的配色。要看其他配色的照片嗎？`
+                    };
+                }
+                return {
+                    intent_primary: "111", image_ids: imgIds, products_in_response: targetModels.map(m => MKB[m].id),
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `以下是查詢範圍的配色照片（依產品編號排列）：${html}`
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 110: 術語解釋
+            // -----------------------------------------------------------------
+            if (/是什麼意思|是什麼|差在哪|代表什麼/.test(lowerQ) && mentioned.length === 0) {
+                if (/ldac.*aac|藍牙6\.1.*5\.3|哪種比較好/.test(lowerQ)) {
+                    return {
+                        intent_primary: "110", suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: "LDAC 是 Sony 開發的藍牙音訊編碼，可用較高位元率傳輸；AAC 是常見的音訊編碼，蘋果裝置普遍使用。實際表現會受手機端支援與使用環境影響，系統無法判斷哪一種比較好。"
+                    };
+                }
+                for (let g of GLOSSARY) {
+                    if (g.keys.some(k => lowerQ.includes(k))) {
+                        return {
+                            intent_primary: "110", suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                            response_text: `<strong>${g.term}</strong>：${g.def}`
+                        };
+                    }
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 103: 單一條件篩選 (預算 / IP等級 / 雙裝置 / 無線充電)
+            // -----------------------------------------------------------------
+            if (/7500|7,500|預算|6000|6500|以下|以內|不超過/.test(lowerQ) && !/最輕|最便宜|排序/.test(lowerQ)) {
+                let limit = 7500;
+                const matchNum = lowerQ.replace(/,/g, '').match(/(\d{4})/);
+                if (matchNum) limit = parseInt(matchNum[1]);
+
+                const passed = ALL_MODELS.filter(m => MKB[m].price_num <= limit);
+                const failed = ALL_MODELS.filter(m => MKB[m].price_num > limit);
+                activeProductSet = passed.length > 0 ? passed : [...ALL_MODELS];
+                lastAttributeAsked = 'price';
+
+                const passStr = passed.map(m => `${m} (${MKB[m].price})`).join('、') || '無';
+                const failStr = failed.map(m => `${m} (${MKB[m].price})`).join('、');
+                return {
+                    intent_primary: "103", attributes_requested: ["price"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `符合「價格 NT$${limit.toLocaleString()} 以下」的產品有：${passStr}。${failStr ? `${failStr} 超出這個價格條件，不符合。` : ''}`
+                };
+            }
+
+            if (/ip54|ip55|ip57|防塵防水|防水.*以上|下雨|流汗|只有ipx4/.test(lowerQ) && mentioned.length === 0) {
+                activeProductSet = ["Model 01", "Model 02", "Model 03", "Model 04"];
+                lastAttributeAsked = 'ip';
+                return {
+                    intent_primary: "103", attributes_requested: ["ip"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "符合「IP54 或以上（具備防塵與防潑水）」的產品有：Model 01 (IP57)、Model 02 (IP54)、Model 03 (IP54)、Model 04 (IP55)。Model 05 與 Model 06 都是 IPX4（僅生活防潑水，沒有防塵等級），不符合這個條件。"
+                };
+            }
+
+            if (/支援雙裝置|多點連線|同時連|不能雙裝置/.test(lowerQ) && mentioned.length === 0) {
+                activeProductSet = ["Model 01", "Model 02", "Model 03", "Model 05", "Model 06"];
+                lastAttributeAsked = 'mp';
+                return {
+                    intent_primary: "103", attributes_requested: ["mp"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "支援雙裝置多點連線的產品有：Model 01、Model 02、Model 03、Model 05、Model 06。Model 04 僅有單設備配對記憶，不支援多點連線。"
+                };
+            }
+
+            if (/哪些.*無線充電/.test(lowerQ)) {
+                activeProductSet = ["Model 01", "Model 02", "Model 04", "Model 05", "Model 06"];
+                return {
+                    intent_primary: "103", attributes_requested: ["charge"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "支援 Qi 無線充電的產品有：Model 01、Model 02、Model 04、Model 05、Model 06。Model 03 產品資料中列出的充電方式為 Type-C 快充，未列出無線充電。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 104: 兩兩比較 (A vs B，或計算價差/重量差/續航差)
+            // -----------------------------------------------------------------
+            if (mentioned.length === 2) {
+                const [mA, mB] = mentioned;
+                const dA = MKB[mA], dB = MKB[mB];
+                activeProductSet = [mA, mB];
+
+                if (/每小時.*成本|cp值|哪個比較好|選哪個|比較划算/.test(lowerQ)) {
+                    return {
+                        intent_primary: "104", products_mentioned: [dA.id, dB.id], products_in_response: [dA.id, dB.id],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `系統只提供產品資料中的數值與兩個數值之間的差距，不計算每小時成本這類衍生指標，也不評估哪款較好。${mA} 與 ${mB} 的完整規格對照如下：${buildFullComparisonTable([mA, mB])}`
+                    };
+                }
+                if (/價差|差多少錢|價格差/.test(lowerQ)) {
+                    const diff = Math.abs(dA.price_num - dB.price_num);
+                    return {
+                        intent_primary: "104", attributes_requested: ["price"], products_mentioned: [dA.id, dB.id], products_in_response: [dA.id, dB.id],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `在官方參考定價方面，${mA} 為 ${dA.price}、${mB} 為 ${dB.price}，相差 NT$${diff.toLocaleString()}。`
+                    };
+                }
+                if (/重量|哪個比較輕|差幾克/.test(lowerQ)) {
+                    const diff = Math.abs(dA.weight_num - dB.weight_num).toFixed(1);
+                    return {
+                        intent_primary: "104", attributes_requested: ["weight"], products_mentioned: [dA.id, dB.id], products_in_response: [dA.id, dB.id],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `在單耳重量方面，${mA} 為 ${dA.weight}、${mB} 為 ${dB.weight}，相差 ${diff} g。`
+                    };
+                }
+                return {
+                    intent_primary: "104", products_mentioned: [dA.id, dB.id], products_in_response: [dA.id, dB.id],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `${mA} 與 ${mB} 的規格對照如下：${buildFullComparisonTable([mA, mB])}`
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 101: 整體比較 (全部六款完整規格表)
+            // -----------------------------------------------------------------
+            if (/全部|六款|這幾款|比較表|所有規格|都列出來|一次看完|比較.*耳機/.test(lowerQ) && mentioned.length === 0) {
+                activeProductSet = [...ALL_MODELS];
+                return {
+                    intent_primary: "101", products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `目前可以比較的是 Model 01 到 Model 06，共六款。以下是各款的完整規格整理：${buildFullComparisonTable(ALL_MODELS)}`
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 102: 單一屬性排序 (價格 / 重量 / ANC開續航 / ANC關續航 / 總續航 / 續航未指明)
+            // -----------------------------------------------------------------
+            if (/最輕|最重|重量.*排/.test(lowerQ)) {
+                lastAttributeAsked = 'weight';
+                return {
+                    intent_primary: "102", attributes_requested: ["weight"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "在單耳重量方面，由輕到重排序：Model 02 (4.7 g)、Model 04 (5.0 g)、Model 05 (5.1 g)、Model 01 (5.4 g) 與 Model 06 (5.4 g) 並列、Model 03 (5.5 g)。"
+                };
+            }
+            if (/最便宜|最貴|價格.*排|最低價|價錢.*排/.test(lowerQ)) {
+                lastAttributeAsked = 'price';
+                return {
+                    intent_primary: "102", attributes_requested: ["price"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "在官方參考定價方面，由低到高排序：Model 03 (NT$5,990)、Model 05 (NT$6,499)、Model 01 / Model 02 / Model 04 (皆為 NT$7,490)、Model 06 (NT$7,980)。"
+                };
+            }
+            if (/開降噪.*最久|開anc.*最長|anc.*續航.*排|開降噪續航/.test(lowerQ)) {
+                lastAttributeAsked = 'anc_on';
+                return {
+                    intent_primary: "102", attributes_requested: ["anc_on"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "在 ANC 開啟的單次續航方面，由長到短排序：Model 05 (約10 h)、Model 04 (約9h)、Model 02 (8 h) 與 Model 03 (約8h) 並列、Model 01 (約6h) 與 Model 06 (6 h) 並列。"
+                };
+            }
+            if (/不開降噪|關.*anc|關閉降噪/.test(lowerQ)) {
+                lastAttributeAsked = 'anc_off';
+                return {
+                    intent_primary: "102", attributes_requested: ["anc_off"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "在 ANC 關閉的單次續航方面，由長到短排序：Model 05 (14 h)、Model 02 (12 h) 與 Model 04 (12 h) 並列、Model 03 (11 h)、Model 01 (7.5 h) 與 Model 06 (7.5 h) 並列。"
+                };
+            }
+            if (/充電盒.*最久|總續航/.test(lowerQ)) {
+                lastAttributeAsked = 'case_bat';
+                return {
+                    intent_primary: "102", attributes_requested: ["case_bat"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "在搭配充電盒續航方面，由長到短排序：Model 05 (最高38小時)、Model 04 (最高36小時)、Model 02 (最高30小時)、Model 03 (最高28小時)、Model 01 (最高26小時)、Model 06 (最高18.5小時)。"
+                };
+            }
+            if (/續航最好|電池最耐用|最持久|續航.*排|哪款續航/.test(lowerQ) && mentioned.length === 0) {
+                lastAttributeAsked = 'anc_on';
+                let batTable = `<div class="overflow-x-auto my-2 border border-slate-200 rounded-lg"><table class="mkb-table w-full"><thead><tr><th>產品</th><th>ANC 開啟(單次)</th><th>ANC 關閉(單次)</th><th>搭配充電盒</th></tr></thead><tbody>`;
+                ALL_MODELS.forEach(m => {
+                    batTable += `<tr><td class="font-semibold">${m}</td><td>${MKB[m].anc_on}</td><td>${MKB[m].anc_off}</td><td>${MKB[m].case_bat}</td></tr>`;
+                });
+                batTable += `</tbody></table></div>`;
+                return {
+                    intent_primary: "102", boundary_triggered: "clarify", attributes_requested: ["anc_on","anc_off","case_bat"],
+                    products_in_response: ["01","02","03","04","05","06"], suggestions_shown: false, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `續航有三種口徑：開啟降噪的單次續航、關閉降噪的單次續航、搭配充電盒的總續航。三種都列在下面，你想看哪一種的排序？${batTable}`
+                };
+            }
+            if (/防水.*最高|最防水|ip等級.*排/.test(lowerQ)) {
+                lastAttributeAsked = 'ip';
+                return {
+                    intent_primary: "102", attributes_requested: ["ip"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "在防水防塵等級方面，由高到低排序：Model 01 (IP57)、Model 04 (IP55)、Model 02 (IP54) 與 Model 03 (IP54) 並列、Model 05 (IPX4，無防塵等級) 與 Model 06 (IPX4，無防塵等級) 並列。"
+                };
+            }
+            if (/藍牙.*最新|藍牙.*排/.test(lowerQ)) {
+                lastAttributeAsked = 'bt';
+                return {
+                    intent_primary: "102", attributes_requested: ["bt"], products_in_response: ["01","02","03","04","05","06"],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "在藍牙傳輸版本方面，由新到舊排序：Model 01 (Bluetooth 6.1)、Model 02 (Bluetooth 5.4) 與 Model 06 (Bluetooth 5.4) 並列、Model 03 (Bluetooth 5.3) 與 Model 04 (Bluetooth 5.3) 並列、Model 05 (Bluetooth 5.2)。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 105 & 109: 單一產品資訊查詢 / 省略主詞追問延伸
+            // -----------------------------------------------------------------
+            if (mentioned.length === 1) {
+                const m = MKB[mentioned[0]];
+                // 若為「那 04 呢？」這類接續上一輪屬性的追問 (Intent 109)
+                if (/^那.*呢\??$/.test(q) && lastAttributeAsked) {
+                    const attrLabelMap = { price: "官方參考定價", ip: "防水防塵等級", mp: "雙裝置多點連線", anc_on: "ANC 開啟單次續航", weight: "單耳重量" };
+                    return {
+                        intent_primary: "109", products_mentioned: [m.id], products_in_response: [m.id],
+                        attributes_requested: [lastAttributeAsked], suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `${m.name} 的${attrLabelMap[lastAttributeAsked] || '規格'}是 ${m[lastAttributeAsked]}。`
+                    };
+                }
+                // 處理 MKB 未列欄位 (Model 03 無線充電、Model 06 快充時間)
+                if (m.id === "03" && /無線充電|qi/.test(lowerQ)) {
+                    return {
+                        intent_primary: "105", fallback_subtype: "missing_field", products_mentioned: ["03"], products_in_response: ["03"],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: "產品資料中 Model 03 列出的充電方式是 Type-C 快充（10分鐘可用1小時），沒有列出 Qi 無線充電，所以系統無法確認是否支援。"
+                    };
+                }
+                if (m.id === "06" && /快充/.test(lowerQ)) {
+                    return {
+                        intent_primary: "105", fallback_subtype: "missing_field", products_mentioned: ["06"], products_in_response: ["06"],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: "產品資料中 Model 06 列出的充電方式是 Qi 無線充電、Type-C 有線充電，沒有列出快充時間，所以系統無法確認。"
+                    };
+                }
+                // 一句多問或完整規格 (Deliverable 4 範例 14 & 30)
+                let subAnswers = [];
+                if (/多少錢|價格|定價/.test(lowerQ)) { subAnswers.push(`官方參考定價是 ${m.price}`); lastAttributeAsked = 'price'; }
+                if (/多重|重量|幾克/.test(lowerQ)) { subAnswers.push(`單耳重量是 ${m.weight}`); lastAttributeAsked = 'weight'; }
+                if (/防水|防塵|ip|淋雨/.test(lowerQ)) { subAnswers.push(`防水防塵等級是 ${m.ip}`); lastAttributeAsked = 'ip'; }
+                if (/雙裝置|多點|同時連/.test(lowerQ)) { subAnswers.push(`雙裝置多點連線規格為：${m.mp}`); lastAttributeAsked = 'mp'; }
+                if (/續航|聽多久/.test(lowerQ)) { subAnswers.push(`單次續航為 ${m.anc_on} (ANC開啟) / ${m.anc_off} (ANC關閉)，搭配充電盒續航 ${m.case_bat}`); lastAttributeAsked = 'anc_on'; }
+                if (/顏色|配色/.test(lowerQ)) { subAnswers.push(`機身可選配色有：${m.color}`); }
+
+                if (subAnswers.length > 0) {
+                    return {
+                        intent_primary: "105", products_mentioned: [m.id], products_in_response: [m.id],
+                        suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                        response_text: `${m.name} 的${subAnswers.join('；')}。`
+                    };
+                }
+
+                // 預設回傳該產品全部 13 項規格
+                return {
+                    intent_primary: "105", products_mentioned: [m.id], products_in_response: [m.id],
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `${m.name} 的規格：定價 ${m.price}、防水防塵 ${m.ip}、雙裝置連線 ${m.mp}、單次續航 ${m.anc_on} (ANC開啟) / ${m.anc_off} (ANC關閉)、充電盒續航 ${m.case_bat}、單耳重量 ${m.weight}、降噪規格 ${m.anc_spec}、${m.bt}、編碼 ${m.codec}、單體 ${m.driver}、充電 ${m.charge}、配色 ${m.color}。`
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 109: 省略主詞追問 (沿用 activeProductSet，如「那開降噪的續航呢？」「那重量呢？」)
+            // -----------------------------------------------------------------
+            if (/^那.*呢|續航呢|重量呢|價格呢|防水呢|雙裝置呢/.test(lowerQ) && mentioned.length === 0) {
+                let attrKey = 'anc_on', attrName = 'ANC 開啟的單次續航';
+                if (/重量/.test(lowerQ)) { attrKey = 'weight'; attrName = '單耳重量'; }
+                else if (/價格|多少錢/.test(lowerQ)) { attrKey = 'price'; attrName = '官方參考定價'; }
+                else if (/防水|ip/.test(lowerQ)) { attrKey = 'ip'; attrName = '防水防塵等級'; }
+                else if (/雙裝置|多點/.test(lowerQ)) { attrKey = 'mp'; attrName = '雙裝置多點連線'; }
+                lastAttributeAsked = attrKey;
+
+                const listStr = activeProductSet.map(m => `${m} 為 ${MKB[m][attrKey]}`).join('、');
+                return {
+                    intent_primary: "109", attributes_requested: [attrKey],
+                    products_in_response: activeProductSet.map(m => MKB[m].id),
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: `在${attrName}方面（針對目前範圍）：${listStr}。`
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 107: 適合度詢問 / CP值詢問 (無明確條件要求推薦)
+            // -----------------------------------------------------------------
+            if (/適合我|推薦|幫我選|幫我挑|買哪個|cp值|最划算|最值得買|哪款最好/.test(lowerQ)) {
+                return {
+                    intent_primary: "107", fallback_subtype: "recommend", boundary_triggered: "recommend",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "我沒辦法直接告訴你「哪款最適合你」或計算 CP 值，但可以依你明確提供的單一條件幫你整理出符合條件的產品，或依單一規格排序，最後由你自己決定。可設定的條件有：價格、防水防塵等級、雙裝置連線、ANC開啟續航、ANC關閉續航、充電盒續航、單耳重量、藍牙版本、音訊編碼、充電方式、配色。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // Intent 108: 主觀評價或 MKB 外資訊 Fallback
+            // -----------------------------------------------------------------
+            if (/音質最好|低音|舒服|舒適|好看|哪裡買|優惠|保固|app|iphone|評價|會不會掉/.test(lowerQ)) {
+                const isSubj = /音質|低音|舒服|舒適|好看/.test(lowerQ);
+                return {
+                    intent_primary: "108", fallback_subtype: isSubj ? "subjective" : "out_of_scope",
+                    suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                    response_text: "目前這個系統可以協助你查詢與比較這六款耳機的客觀規格（價格、防水防塵、雙裝置連線、續航、重量、降噪規格、藍牙、編碼、充電、配色）與配色照片，但無法回答主觀聽感、佩戴舒適度或購買通路優惠等範圍外資訊。你可以問我各款的單體架構、音訊編碼或具體規格數據。"
+                };
+            }
+
+            // -----------------------------------------------------------------
+            // 第二軌：若以上腳本皆未命中，可呼叫後端 LLM API (預留串接孔)
+            // -----------------------------------------------------------------
+            return {
+                intent_primary: "108", fallback_subtype: "out_of_scope",
+                suggestions_shown: true, response_mode: "fixed", pii_masked: piiMasked,
+                response_text: "目前這個系統可以協助你查詢與比較這六款耳機的規格（價格、防水防塵、雙裝置連線、續航、重量、降噪規格、藍牙、編碼、充電、配色）與配色照片。你可以告訴我你想查詢的單一條件，或點選下方選項繼續查詢。"
+            };
+        }
+
+        // =========================================================================
+        // 畫面渲染與互動邏輯
+        // =========================================================================
+        function appendMessageBubble(role, htmlText) {
+            const container = document.getElementById('chatContainer');
+            const wrapper = document.createElement('div');
+            wrapper.className = role === 'user' ? 'flex justify-end' : 'flex justify-start items-start gap-3';
+
+            if (role === 'user') {
+                wrapper.innerHTML = `
+                    <div class="bg-emerald-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-xs max-w-xl text-sm leading-relaxed shadow-xs">
+                        ${htmlText}
+                    </div>
+                `;
+            } else {
+                wrapper.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">AI</div>
+                    <div class="bg-slate-100 text-slate-800 border border-slate-200 px-4 py-3 rounded-2xl rounded-tl-xs max-w-2xl text-sm leading-relaxed shadow-xs overflow-x-auto">
+                        ${htmlText}
+                    </div>
+                `;
+            }
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function toggleFollowUpChips(show) {
+            const zone = document.getElementById('followUpZone');
+            if (show) {
+                zone.classList.remove('hidden');
+            } else {
+                zone.classList.add('hidden');
+            }
+        }
+
+        async function executeChatTurn(userText, inputType, chipClicked = null) {
+            if (!userText.trim()) return;
+            turnCounter++;
+            const t0 = performance.now();
+
+            // 1. 顯示使用者訊息
+            appendMessageBubble('user', userText);
+            document.getElementById('chatInput').value = '';
+
+            // 2. 取得雙軌引擎回覆
+            const result = await processUserQuery(userText, inputType, chipClicked);
+
+            // 3. 執行 Deliverable 12 自動檢查護欄
+            const guardrailStatus = runGuardrailCheck(result.response_text, result.intent_primary);
+            const finalResponseText = guardrailStatus === 'pass' 
+                ? result.response_text 
+                : "系統暫時無法回應，請再輸入一次。";
+
+            // 4. 模擬真實微延遲 (350ms) 並顯示 AI 回覆
+            setTimeout(() => {
+                const latency = Math.round(performance.now() - t0);
+                appendMessageBubble('ai', finalResponseText);
+                toggleFollowUpChips(result.suggestions_shown);
+
+                // 5. 寫入 ai_messages 紀錄
+                logAIMessage({
+                    turn_number: turnCounter,
+                    user_message: userText,
+                    response_text: finalResponseText,
+                    intent_primary: result.intent_primary,
+                    intent_secondary: result.intent_secondary,
+                    response_mode: result.response_mode,
+                    latency_ms: latency,
+                    products_mentioned: result.products_mentioned,
+                    products_in_response: result.products_in_response,
+                    attributes_requested: result.attributes_requested,
+                    boundary_triggered: result.boundary_triggered,
+                    fallback_subtype: result.fallback_subtype,
+                    image_ids: result.image_ids,
+                    final_choice: result.final_choice,
+                    input_type: inputType,
+                    chip_clicked: chipClicked,
+                    suggestions_shown: result.suggestions_shown,
+                    guardrail_result: guardrailStatus,
+                    pii_masked: result.pii_masked
+                });
+            }, 350);
+        }
+
+        function handleUserTyped() {
+            const val = document.getElementById('chatInput').value;
+            if (!val.trim()) return;
+            executeChatTurn(val, 'typed', null);
+        }
+
+        function handleChipClick(chipLabel, sentText) {
+            logEvent('click_chip', chipLabel);
+            executeChatTurn(sentText, 'chip', chipLabel);
+        }
+
+        // 啟動對話與固定開場白 (Deliverable 3)
+        function enterAIChat() {
+            document.getElementById('introScreen').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            localStorage.setItem('started_at', new Date().toISOString());
+            logEvent('task_start', 'enter_ai_chat');
+
+            const openingGreeting = "你好，我可以幫你查詢與比較六款藍牙耳機（Model 01 到 Model 06）的規格與配色照片，也可以解釋相關術語。請問想先了解什麼？";
+            appendMessageBubble('ai', openingGreeting);
+            toggleFollowUpChips(true);
+            document.getElementById('chatInput').focus();
+        }
+
+        // 最終選擇彈窗控制
+        function openFinalChoiceModal() {
+            document.getElementById('choiceModal').classList.remove('hidden');
+            document.getElementById('choiceModal').classList.add('flex');
+        }
+
+        function closeFinalChoiceModal() {
+            document.getElementById('choiceModal').classList.add('hidden');
+            document.getElementById('choiceModal').classList.remove('flex');
+        }
+
+        function submitFinalChoice() {
+            const selected = document.querySelector('input[name="finalProduct"]:checked');
+            if (!selected) { alert('請先選擇一款耳機！'); return; }
+            
+            const choice = selected.value;
+            const isCorrect = (choice === 'Model 03');
+            const errorTypeMap = {
+                'Model 03': 'none_optimal',
+                'Model 01': 'preference_anc_battery_short',
+                'Model 02': 'preference_price_value_decoy',
+                'Model 04': 'hard_constraint_multipoint',
+                'Model 05': 'hard_constraint_ip_rating',
+                'Model 06': 'hard_constraint_price_and_ip'
+            };
+
+            logEvent('submit_choice', choice, { error_type: errorTypeMap[choice] });
+
+            const sessionUpdateData = {
+                session_id: localStorage.getItem('session_id'),
+                ended_at: new Date().toISOString(),
+                final_choice: choice,
+                choice_correct: isCorrect,
+                status: 'completed'
+            };
+            console.log('✅ [API 傳送 -> 更新 sessions 完結]:', sessionUpdateData);
+
+            const startTime = new Date(localStorage.getItem('started_at') || Date.now()).getTime();
+            const durationSec = Math.round((Date.now() - startTime) / 1000);
+
+            alert(`🎉 實驗完成！\n您最終選擇了：${choice}\n（共進行 ${turnCounter} 輪對話，耗時：${durationSec} 秒）`);
+            closeFinalChoiceModal();
+        }
+
+        document.body.classList.add('modal-open');
+    </script>
+</body>
+</html>/3
