@@ -6,154 +6,88 @@
     <title>Yaho! 奇摩搜尋 - 藍牙耳機採購實驗</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 內建完整 Tailwind 保底 CSS (不依賴外部 CDN，離線 100% 正常顯示) */
         * { box-sizing: border-box; }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif; background-color: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
         body.modal-open { overflow: hidden; }
         .hidden { display: none !important; }
-        .block { display: block; }
-        .inline-block { display: inline-block; }
+        .block { display: block; } .inline-block { display: inline-block; }
         .highlight { color: #dc2626; font-weight: 700; background-color: #fef2f2; padding: 0 2px; border-radius: 2px; }
-
-        #introScreen, #documentModal, #choiceModal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(15, 23, 42, 0.85);
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
-            padding: 16px; overflow-y: auto;
-        }
+        #introScreen, #documentModal, #choiceModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
         #introScreen.hidden, #documentModal.hidden, #choiceModal.hidden { display: none !important; }
-
-        .relative { position: relative; } .absolute { position: absolute; } .fixed { position: fixed; } .sticky { position: sticky; }
-        .top-0 { top: 0; } .bottom-0 { bottom: 0; } .left-0 { left: 0; } .right-0 { right: 0; }
-        .top-3 { top: 12px; } .left-3 { left: 12px; } .right-3 { right: 12px; } .bottom-3 { bottom: 12px; } .left-4 { left: 16px; } .bottom-14 { bottom: 56px; }
-        .z-30 { z-index: 30; } .z-40 { z-index: 40; } .z-50 { z-index: 50; }
-
+        .relative { position: relative; } .absolute { position: absolute; } .sticky { position: sticky; }
+        .top-0 { top: 0; } .bottom-0 { bottom: 0; } .left-0 { left: 0; } .right-0 { right: 0; } .top-3 { top: 12px; } .left-4 { left: 16px; } .right-3 { right: 12px; } .bottom-3 { bottom: 12px; } .bottom-14 { bottom: 56px; }
+        .z-30 { z-index: 30; } .z-40 { z-index: 40; }
         .flex { display: flex; } .flex-col { flex-direction: column; } .flex-wrap { flex-wrap: wrap; } .flex-1 { flex: 1 1 0%; } .shrink-0 { flex-shrink: 0; }
-        .items-center { align-items: center; } .items-baseline { align-items: baseline; } .justify-center { justify-content: center; } .justify-between { justify-content: space-between; }
-        .gap-1 { gap: 4px; } .gap-1\.5 { gap: 6px; } .gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; } .gap-6 { gap: 24px; } .gap-8 { gap: 32px; }
-
-        .grid { display: grid; }
-        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-        @media (min-width: 640px) {
-            .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .sm\:px-8 { padding-left: 32px; padding-right: 32px; }
-            .sm\:p-6 { padding: 24px; } .sm\:p-10 { padding: 40px; }
-            .sm\:text-sm { font-size: 14px; } .sm\:text-xl { font-size: 20px; } .sm\:text-3xl { font-size: 30px; }
-            .sm\:inline { display: inline; } .sm\:rounded-2xl { border-radius: 16px; } .sm\:max-w-2xl { max-width: 42rem; }
-        }
-        @media (min-width: 768px) {
-            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .md\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-            .md\:col-span-5 { grid-column: span 5 / span 5; } .md\:col-span-7 { grid-column: span 7 / span 7; }
-        }
-
-        .w-full { width: 100%; } .w-3 { width: 12px; } .h-3 { height: 12px; } .w-5 { width: 20px; } .h-5 { height: 20px; } .w-6 { width: 24px; } .h-6 { height: 24px; } .w-7 { width: 28px; } .h-7 { height: 28px; } .w-8 { width: 32px; } .h-8 { height: 32px; } .w-10 { width: 40px; } .h-10 { height: 40px; }
-        .w-12 { width: 48px; } .h-12 { height: 48px; } .w-16 { width: 64px; } .h-16 { height: 64px; } .w-20 { width: 80px; } .w-24 { width: 96px; } .w-28 { width: 112px; } .w-44 { width: 176px; } .h-44 { height: 176px; } .w-48 { width: 192px; } .h-48 { height: 192px; } .w-64 { width: 256px; } .w-1\/3 { width: 33.333%; } .w-2\/5 { width: 40%; }
-        .object-contain { object-fit: contain; }
-        .min-w-\[160px\] { min-width: 160px; } .max-w-xs { max-width: 20rem; } .max-w-md { max-width: 28rem; } .max-w-xl { max-width: 36rem; } .max-w-2xl { max-width: 42rem; } .max-w-3xl { max-width: 48rem; } .max-w-4xl { max-width: 56rem; } .max-w-5xl { max-width: 64rem; } .max-w-6xl { max-width: 72rem; }
-        .min-h-screen { min-height: 100vh; } .min-h-full { min-height: 100%; } .aspect-square { aspect-ratio: 1 / 1; }
-        .mx-auto { margin-left: auto; margin-right: auto; } .my-auto { margin-top: auto; margin-bottom: auto; } .mx-2 { margin-left: 8px; margin-right: 8px; } .my-2 { margin-top: 8px; margin-bottom: 8px; } .my-4 { margin-top: 16px; margin-bottom: 16px; } .my-8 { margin-top: 32px; margin-bottom: 32px; }
-
-        .p-2 { padding: 8px; } .p-2\.5 { padding: 10px; } .p-3 { padding: 12px; } .p-3\.5 { padding: 14px; } .p-4 { padding: 16px; } .p-5 { padding: 20px; } .p-6 { padding: 24px; } .p-8 { padding: 32px; }
+        .items-center { align-items: center; } .items-start { align-items: flex-start; } .items-baseline { align-items: baseline; } .justify-center { justify-content: center; } .justify-between { justify-content: space-between; }
+        .gap-1 { gap: 4px; } .gap-1\.5 { gap: 6px; } .gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; } .gap-6 { gap: 24px; }
+        .grid { display: grid; } .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); } .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        @media (min-width: 640px) { .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sm\:p-6 { padding: 24px; } .sm\:p-10 { padding: 40px; } .sm\:text-sm { font-size: 14px; } .sm\:text-3xl { font-size: 30px; } .sm\:rounded-2xl { border-radius: 16px; } .sm\:max-w-2xl { max-width: 42rem; } }
+        .serp-two-col { display: flex; flex-direction: column; gap: 32px; width: 100%; }
+        .serp-left-col { flex: 1; min-width: 0; }
+        .serp-right-col { width: 100%; display: flex; flex-direction: column; gap: 24px; flex-shrink: 0; }
+        @media (min-width: 900px) { .serp-two-col { flex-direction: row; align-items: flex-start; } .serp-right-col { width: 300px; position: sticky; top: 64px; } }
+        .w-full { width: 100%; } .w-3 { width: 12px; } .h-3 { height: 12px; } .w-6 { width: 24px; } .h-6 { height: 24px; } .w-7 { width: 28px; } .h-7 { height: 28px; } .w-10 { width: 40px; } .h-10 { height: 40px; } .w-16 { width: 64px; } .h-16 { height: 64px; } .w-20 { width: 80px; } .w-24 { width: 96px; } .h-24 { height: 96px; } .w-48 { width: 192px; } .h-48 { height: 192px; } .w-60 { width: 240px; }
+        .object-contain { object-fit: contain; } .min-w-\[155px\] { min-width: 155px; } .max-w-xs { max-width: 20rem; } .max-w-md { max-width: 28rem; } .max-w-xl { max-width: 36rem; } .max-w-2xl { max-width: 42rem; } .max-w-4xl { max-width: 56rem; } .max-w-5xl { max-width: 64rem; } .max-w-6xl { max-width: 72rem; } .min-h-screen { min-height: 100vh; } .min-h-full { min-height: 100%; } .aspect-square { aspect-ratio: 1 / 1; }
+        .mx-auto { margin-left: auto; margin-right: auto; } .my-auto { margin-top: auto; margin-bottom: auto; } .mx-2 { margin-left: 8px; margin-right: 8px; } .my-1 { margin-top: 4px; margin-bottom: 4px; } .my-2 { margin-top: 8px; margin-bottom: 8px; }
+        .p-0\.5 { padding: 2px; } .p-2 { padding: 8px; } .p-2\.5 { padding: 10px; } .p-3 { padding: 12px; } .p-3\.5 { padding: 14px; } .p-4 { padding: 16px; } .p-5 { padding: 20px; } .p-6 { padding: 24px; } .p-8 { padding: 32px; }
         .px-1 { padding-left: 4px; padding-right: 4px; } .px-1\.5 { padding-left: 6px; padding-right: 6px; } .px-2 { padding-left: 8px; padding-right: 8px; } .px-2\.5 { padding-left: 10px; padding-right: 10px; } .px-3 { padding-left: 12px; padding-right: 12px; } .px-3\.5 { padding-left: 14px; padding-right: 14px; } .px-4 { padding-left: 16px; padding-right: 16px; } .px-6 { padding-left: 24px; padding-right: 24px; } .px-8 { padding-left: 32px; padding-right: 32px; }
-        .py-0\.5 { padding-top: 2px; padding-bottom: 2px; } .py-1 { padding-top: 4px; padding-bottom: 4px; } .py-1\.5 { padding-top: 6px; padding-bottom: 6px; } .py-2 { padding-top: 8px; padding-bottom: 8px; } .py-2\.5 { padding-top: 10px; padding-bottom: 10px; } .py-3 { padding-top: 12px; padding-bottom: 12px; } .py-3\.5 { padding-top: 14px; padding-bottom: 14px; } .py-6 { padding-top: 24px; padding-bottom: 24px; } .py-8 { padding-top: 32px; padding-bottom: 32px; } .py-10 { padding-top: 40px; padding-bottom: 40px; }
-        .pt-1 { padding-top: 4px; } .pt-2 { padding-top: 8px; } .pb-0 { padding-bottom: 0; } .pb-1 { padding-bottom: 4px; } .pb-2 { padding-bottom: 8px; } .pb-3 { padding-bottom: 12px; } .pb-4 { padding-bottom: 16px; } .pb-6 { padding-bottom: 24px; } .pb-20 { padding-bottom: 80px; } .pl-2 { padding-left: 8px; }
-        .mb-1 { margin-bottom: 4px; } .mb-1\.5 { margin-bottom: 6px; } .mb-2 { margin-bottom: 8px; } .mb-2\.5 { margin-bottom: 10px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; } .mb-5 { margin-bottom: 20px; } .mb-6 { margin-bottom: 24px; } .mb-8 { margin-bottom: 32px; }
-        .mt-0\.5 { margin-top: 2px; } .mt-1 { margin-top: 4px; } .mt-2 { margin-top: 8px; } .mt-2\.5 { margin-top: 10px; } .mt-3 { margin-top: 12px; } .mt-4 { margin-top: 16px; } .mt-5 { margin-top: 20px; } .mt-6 { margin-top: 24px; } .-mt-10 { margin-top: -40px; }
-        .mr-1 { margin-right: 4px; } .mr-2 { margin-right: 8px; } .mr-3 { margin-right: 12px; } .ml-1 { margin-left: 4px; } .ml-2 { margin-left: 8px; }
-        .space-y-1 > * + * { margin-top: 4px; } .space-y-1\.5 > * + * { margin-top: 6px; } .space-y-2 > * + * { margin-top: 8px; } .space-y-2\.5 > * + * { margin-top: 10px; } .space-y-3 > * + * { margin-top: 12px; } .space-y-4 > * + * { margin-top: 16px; } .space-y-6 > * + * { margin-top: 24px; } .space-y-8 > * + * { margin-top: 32px; }
+        .py-0\.5 { padding-top: 2px; padding-bottom: 2px; } .py-1 { padding-top: 4px; padding-bottom: 4px; } .py-1\.5 { padding-top: 6px; padding-bottom: 6px; } .py-2 { padding-top: 8px; padding-bottom: 8px; } .py-2\.5 { padding-top: 10px; padding-bottom: 10px; } .py-3 { padding-top: 12px; padding-bottom: 12px; } .py-3\.5 { padding-top: 14px; padding-bottom: 14px; } .py-6 { padding-top: 24px; padding-bottom: 24px; }
+        .pt-1 { padding-top: 4px; } .pt-1\.5 { padding-top: 6px; } .pt-2 { padding-top: 8px; } .pb-0 { padding-bottom: 0; } .pb-1 { padding-bottom: 4px; } .pb-2 { padding-bottom: 8px; } .pb-3 { padding-bottom: 12px; } .pb-4 { padding-bottom: 16px; } .pb-6 { padding-bottom: 24px; } .pb-12 { padding-bottom: 48px; } .pb-20 { padding-bottom: 80px; } .pl-2 { padding-left: 8px; }
+        .mb-1 { margin-bottom: 4px; } .mb-1\.5 { margin-bottom: 6px; } .mb-2 { margin-bottom: 8px; } .mb-2\.5 { margin-bottom: 10px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; } .mb-5 { margin-bottom: 20px; } .mb-6 { margin-bottom: 24px; } .mb-8 { margin-bottom: 32px; } .mt-0\.5 { margin-top: 2px; } .mt-1 { margin-top: 4px; } .mt-2 { margin-top: 8px; } .mt-3 { margin-top: 12px; } .mt-4 { margin-top: 16px; } .-mt-10 { margin-top: -40px; } .mr-1 { margin-right: 4px; } .mr-3 { margin-right: 12px; } .ml-1 { margin-left: 4px; } .ml-2 { margin-left: 8px; }
+        .space-y-1 > * + * { margin-top: 4px; } .space-y-1\.5 > * + * { margin-top: 6px; } .space-y-2 > * + * { margin-top: 8px; } .space-y-3 > * + * { margin-top: 12px; } .space-y-4 > * + * { margin-top: 16px; } .space-y-6 > * + * { margin-top: 24px; } .space-y-8 > * + * { margin-top: 32px; }
         .divide-y > * + * { border-top: 1px solid #f1f5f9; }
-
-        .bg-white { background-color: #ffffff; color: #1e293b; } .bg-slate-50 { background-color: #f8fafc; } .bg-slate-100 { background-color: #f1f5f9; } .bg-slate-200 { background-color: #e2e8f0; } .bg-slate-800 { background-color: #1e293b; color: #ffffff; } .bg-slate-900 { background-color: #0f172a; color: #ffffff; }
-        .bg-gray-50 { background-color: #f9fafb; } .bg-gray-100 { background-color: #f3f4f6; } .bg-stone-600 { background-color: #57534e; color: #ffffff; } .bg-neutral-800 { background-color: #262626; } .bg-neutral-900 { background-color: #171717; color: #fef3c7; }
-        .bg-amber-50 { background-color: #fffbeb; } .bg-amber-100 { background-color: #fef3c7; } .bg-amber-400 { background-color: #fbbf24; } .bg-amber-500 { background-color: #f59e0b; color: #ffffff; }
-        .bg-purple-50 { background-color: #faf5ff; } .bg-purple-100 { background-color: #f3e8ff; } .bg-purple-300 { background-color: #d8b4fe; } .bg-purple-700 { background-color: #7e22ce; color: #ffffff; }
-        .bg-emerald-50 { background-color: #ecfdf5; } .bg-emerald-100 { background-color: #d1fae5; } .bg-emerald-400 { background-color: #34d399; } .bg-emerald-500 { background-color: #10b981; color: #ffffff; } .bg-emerald-600 { background-color: #059669; color: #ffffff; }
-        .bg-teal-50 { background-color: #f0fdfa; } .bg-teal-600 { background-color: #0d9488; } .bg-sky-200 { background-color: #bae6fd; } .bg-sky-500 { background-color: #0ea5e9; color: #ffffff; } .bg-sky-600\/50 { background-color: rgba(2, 132, 199, 0.5); }
-        .bg-blue-50 { background-color: #eff6ff; } .bg-blue-100 { background-color: #dbeafe; } .bg-blue-600 { background-color: #2563eb; color: #ffffff; }
-        .bg-orange-500 { background-color: #f97316; color: #ffffff; } .bg-orange-600 { background-color: #ea580c; color: #ffffff; }
-        .bg-red-50 { background-color: #fef2f2; } .bg-red-100 { background-color: #fee2e2; } .bg-red-400 { background-color: #f87171; } .bg-red-500 { background-color: #ef4444; color: #ffffff; } .bg-red-600 { background-color: #dc2626; color: #ffffff; } .bg-red-700 { background-color: #b91c1c; color: #ffffff; }
-        .bg-rose-50 { background-color: #fff1f2; } .bg-rose-600 { background-color: #e11d48; } .bg-pink-500 { background-color: #ec4899; color: #ffffff; } .bg-black\/50 { background-color: rgba(0,0,0,0.5); } .bg-black\/60 { background-color: rgba(0,0,0,0.6); }
-
-        .momo-pink { color: #d61f69; } .bg-momo-pink { background-color: #d61f69; color: #ffffff; } .border-momo-pink { border-color: #d61f69; }
-        .bg-momo-blue { background-color: #0e6eb8; color: #ffffff; } .bg-momo-cyan { background-color: #00a0e9; color: #ffffff; } .bg-momo-orange { background-color: #f59e0b; color: #ffffff; }
-        .pchome-red { color: #e60012; } .bg-pchome-red { background-color: #e60012; color: #ffffff; }
-        .yaho-purple { color: #5b189a; } .bg-yaho-purple { background-color: #5b189a; color: #ffffff; }
-        .bg-gold-btn { background: linear-gradient(90deg, #f59e0b, #ca8a04); color: #171717; }
-
-        .text-white { color: #ffffff; } .text-slate-900 { color: #0f172a; } .text-slate-800 { color: #1e293b; } .text-slate-700 { color: #334155; } .text-slate-600 { color: #475569; } .text-slate-500 { color: #64748b; } .text-slate-400 { color: #94a3b8; }
-        .text-gray-800 { color: #1f2937; } .text-gray-700 { color: #374151; } .text-gray-600 { color: #4b5563; } .text-gray-500 { color: #6b7280; } .text-gray-400 { color: #9ca3af; } .text-gray-300 { color: #d1d5db; }
-        .text-neutral-200 { color: #e5e5e5; } .text-neutral-400 { color: #a3a3a3; } .text-purple-200 { color: #e9d5ff; } .text-purple-500 { color: #a855f7; } .text-purple-700 { color: #7e22ce; } .text-purple-800 { color: #6b21a8; } .text-purple-900 { color: #581c87; }
-        .text-blue-600 { color: #2563eb; } .text-blue-700 { color: #1d4ed8; } .text-blue-800 { color: #1e40af; } .text-blue-900 { color: #1e3a8a; }
-        .text-emerald-400 { color: #34d399; } .text-emerald-600 { color: #059669; } .text-emerald-700 { color: #047857; } .text-emerald-900 { color: #064e3b; }
-        .text-teal-600 { color: #0d9488; } .text-teal-700 { color: #0f766e; } .text-amber-300 { color: #fcd34d; } .text-amber-400 { color: #fbbf24; } .text-amber-700 { color: #b45309; } .text-amber-800 { color: #92400e; } .text-amber-900 { color: #78350f; }
-        .text-red-300 { color: #fca5a5; } .text-red-400 { color: #f87171; } .text-red-500 { color: #ef4444; } .text-red-600 { color: #dc2626; } .text-red-700 { color: #b91c1c; } .text-red-800 { color: #991b1b; } .text-red-900 { color: #7f1d1d; }
-        .text-pink-600 { color: #db2777; } .text-orange-600 { color: #ea580c; }
-
-        .text-\[9px\] { font-size: 9px; } .text-\[10px\] { font-size: 10px; } .text-\[11px\] { font-size: 11px; }
-        .text-xs { font-size: 12px; line-height: 16px; } .text-sm { font-size: 14px; line-height: 20px; } .text-base { font-size: 16px; line-height: 24px; } .text-lg { font-size: 18px; line-height: 28px; } .text-xl { font-size: 20px; line-height: 28px; } .text-2xl { font-size: 24px; line-height: 32px; } .text-3xl { font-size: 30px; line-height: 36px; } .text-4xl { font-size: 36px; line-height: 40px; } .text-6xl { font-size: 60px; line-height: 1; }
-        .font-light { font-weight: 300; } .font-medium { font-weight: 500; } .font-bold { font-weight: 700; } .font-extrabold { font-weight: 800; } .font-black { font-weight: 900; } .italic { font-style: italic; }
-        .text-center { text-align: center; } .leading-none { line-height: 1; } .leading-tight { line-height: 1.25; } .leading-snug { line-height: 1.375; } .leading-relaxed { line-height: 1.625; }
-        .tracking-tight { letter-spacing: -0.025em; } .tracking-tighter { letter-spacing: -0.05em; } .tracking-widest { letter-spacing: 0.1em; }
-        .line-through { text-decoration: line-through; } .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .list-disc { list-style-type: disc; } .list-decimal { list-style-type: decimal; } .list-inside { list-style-position: inside; }
-
-        .border { border: 1px solid #e2e8f0; } .border-2 { border: 2px solid #7e22ce; } .border-t { border-top: 1px solid #e2e8f0; } .border-b { border-bottom: 1px solid #e2e8f0; } .border-r { border-right: 1px solid #e2e8f0; } .border-y { border-top: 1px solid #fde68a; border-bottom: 1px solid #fde68a; }
-        .border-b-2 { border-bottom-width: 2px; border-bottom-style: solid; } .border-l-4 { border-left-width: 4px; border-left-style: solid; }
-        .border-slate-100 { border-color: #f1f5f9; } .border-slate-200 { border-color: #e2e8f0; } .border-slate-300 { border-color: #cbd5e1; }
-        .border-gray-100 { border-color: #f3f4f6; } .border-gray-200 { border-color: #e5e7eb; } .border-gray-300 { border-color: #d1d5db; }
-        .border-neutral-700 { border-color: #404040; } .border-neutral-800 { border-color: #262626; } .border-amber-200 { border-color: #fde68a; } .border-amber-500 { border-color: #f59e0b; }
-        .border-purple-100 { border-color: #f3e8ff; } .border-purple-200 { border-color: #e9d5ff; } .border-purple-600 { border-color: #9333ea; } .border-purple-700 { border-color: #7e22ce; }
-        .border-red-200 { border-color: #fecaca; } .border-red-500 { border-color: #ef4444; } .border-red-600 { border-color: #dc2626; }
-        .border-pink-200 { border-color: #fbcfe8; } .border-pink-400 { border-color: #f472b6; } .border-blue-600 { border-color: #2563eb; } .border-white { border-color: #ffffff; }
-
-        .rounded-sm { border-radius: 2px; } .rounded { border-radius: 4px; } .rounded-md { border-radius: 6px; } .rounded-lg { border-radius: 8px; } .rounded-xl { border-radius: 12px; } .rounded-2xl { border-radius: 16px; } .rounded-full { border-radius: 9999px; }
-        .rounded-r-full { border-top-right-radius: 9999px; border-bottom-right-radius: 9999px; } .rounded-r-xl { border-top-right-radius: 12px; border-bottom-right-radius: 12px; } .rounded-l-md { border-top-left-radius: 6px; border-bottom-left-radius: 6px; } .rounded-br-lg { border-bottom-right-radius: 8px; }
+        .bg-white { background-color: #ffffff; color: #1e293b; } .bg-slate-50 { background-color: #f8fafc; } .bg-slate-100 { background-color: #f1f5f9; } .bg-slate-200 { background-color: #e2e8f0; } .bg-slate-800 { background-color: #1e293b; color: #ffffff; } .bg-slate-900 { background-color: #0f172a; color: #ffffff; } .bg-gray-50 { background-color: #f9fafb; } .bg-gray-100 { background-color: #f3f4f6; } .bg-stone-600 { background-color: #57534e; color: #ffffff; }
+        .bg-amber-50 { background-color: #fffbeb; } .bg-amber-400 { background-color: #fbbf24; } .bg-purple-50 { background-color: #faf5ff; } .bg-purple-100 { background-color: #f3e8ff; } .bg-purple-700 { background-color: #7e22ce; color: #ffffff; } .bg-emerald-50 { background-color: #ecfdf5; } .bg-emerald-100 { background-color: #d1fae5; } .bg-emerald-400 { background-color: #34d399; } .bg-emerald-500 { background-color: #10b981; color: #ffffff; } .bg-sky-500 { background-color: #0ea5e9; color: #ffffff; } .bg-sky-600\/50 { background-color: rgba(2, 132, 199, 0.5); } .bg-blue-600 { background-color: #2563eb; color: #ffffff; } .bg-orange-500 { background-color: #f97316; color: #ffffff; } .bg-red-50 { background-color: #fef2f2; } .bg-red-400 { background-color: #f87171; } .bg-red-500 { background-color: #ef4444; color: #ffffff; } .bg-red-600 { background-color: #dc2626; color: #ffffff; } .bg-red-700 { background-color: #b91c1c; color: #ffffff; } .bg-rose-50 { background-color: #fff1f2; } .bg-pink-500 { background-color: #ec4899; color: #ffffff; } .bg-black\/60 { background-color: rgba(0,0,0,0.6); }
+        .momo-pink { color: #d61f69; } .bg-momo-pink { background-color: #d61f69; color: #ffffff; } .border-momo-pink { border-color: #d61f69; } .bg-momo-blue { background-color: #0e6eb8; color: #ffffff; } .bg-momo-cyan { background-color: #00a0e9; color: #ffffff; } .bg-momo-orange { background-color: #f59e0b; color: #ffffff; }
+        .ad-card-yt { background: linear-gradient(135deg, #0f172a 0%, #dc2626 100%); color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.12); border: 1px solid #e2e8f0; transition: transform 0.2s; display: block; text-decoration: none; }
+        .ad-card-ig { background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.12); border: 1px solid #e2e8f0; transition: transform 0.2s; display: block; text-decoration: none; }
+        .ad-card-yt:hover, .ad-card-ig:hover { transform: translateY(-3px); }
+        .text-white { color: #ffffff; } .text-slate-900 { color: #0f172a; } .text-slate-800 { color: #1e293b; } .text-slate-700 { color: #334155; } .text-slate-600 { color: #475569; } .text-slate-500 { color: #64748b; } .text-slate-400 { color: #94a3b8; } .text-gray-500 { color: #6b7280; } .text-gray-400 { color: #9ca3af; } .text-gray-300 { color: #d1d5db; } .text-purple-500 { color: #a855f7; } .text-purple-700 { color: #7e22ce; } .text-sky-700 { color: #0369a1; } .text-blue-600 { color: #2563eb; } .text-blue-700 { color: #1d4ed8; } .text-blue-800 { color: #1e40af; } .text-emerald-700 { color: #047857; } .text-amber-300 { color: #fcd34d; } .text-amber-400 { color: #fbbf24; } .text-amber-700 { color: #b45309; } .text-amber-800 { color: #92400e; } .text-red-600 { color: #dc2626; } .text-red-700 { color: #b91c1c; } .text-pink-600 { color: #db2777; } .text-orange-600 { color: #ea580c; }
+        .text-\[9px\] { font-size: 9px; } .text-\[10px\] { font-size: 10px; } .text-\[11px\] { font-size: 11px; } .text-xs { font-size: 12px; line-height: 16px; } .text-sm { font-size: 14px; line-height: 20px; } .text-base { font-size: 16px; line-height: 24px; } .text-lg { font-size: 18px; line-height: 28px; } .text-xl { font-size: 20px; line-height: 28px; } .text-2xl { font-size: 24px; line-height: 32px; } .text-3xl { font-size: 30px; line-height: 36px; } .text-4xl { font-size: 36px; line-height: 40px; } .text-6xl { font-size: 60px; line-height: 1; }
+        .font-light { font-weight: 300; } .font-medium { font-weight: 500; } .font-bold { font-weight: 700; } .font-extrabold { font-weight: 800; } .font-black { font-weight: 900; } .italic { font-style: italic; } .text-center { text-align: center; } .leading-none { line-height: 1; } .leading-tight { line-height: 1.25; } .leading-snug { line-height: 1.375; } .leading-relaxed { line-height: 1.625; } .tracking-tight { letter-spacing: -0.025em; } .tracking-tighter { letter-spacing: -0.05em; } .tracking-widest { letter-spacing: 0.1em; } .line-through { text-decoration: line-through; } .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .list-disc { list-style-type: disc; } .list-decimal { list-style-type: decimal; } .list-inside { list-style-position: inside; }
+        .border { border: 1px solid #e2e8f0; } .border-2 { border: 2px solid #7e22ce; } .border-t { border-top: 1px solid #e2e8f0; } .border-b { border-bottom: 1px solid #e2e8f0; } .border-y { border-top: 1px solid #fde68a; border-bottom: 1px solid #fde68a; } .border-b-2 { border-bottom-width: 2px; border-bottom-style: solid; } .border-l-4 { border-left-width: 4px; border-left-style: solid; } .border-slate-100 { border-color: #f1f5f9; } .border-slate-200 { border-color: #e2e8f0; } .border-slate-300 { border-color: #cbd5e1; } .border-gray-100 { border-color: #f3f4f6; } .border-gray-200 { border-color: #e5e7eb; } .border-gray-300 { border-color: #d1d5db; } .border-amber-200 { border-color: #fde68a; } .border-purple-600 { border-color: #9333ea; } .border-pink-200 { border-color: #fbcfe8; } .border-pink-400 { border-color: #f472b6; } .border-white { border-color: #ffffff; }
+        .rounded-sm { border-radius: 2px; } .rounded { border-radius: 4px; } .rounded-md { border-radius: 6px; } .rounded-lg { border-radius: 8px; } .rounded-xl { border-radius: 12px; } .rounded-2xl { border-radius: 16px; } .rounded-full { border-radius: 9999px; } .rounded-r-full { border-top-right-radius: 9999px; border-bottom-right-radius: 9999px; } .rounded-l-md { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
         .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.05); } .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); } .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); } .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); } .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); } .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); } .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05); }
-
-        .mobile-frame { width: 100%; max-width: 430px; margin-left: auto; margin-right: auto; background-color: #f4f4f4; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); border: 1px solid #cbd5e1; position: relative; }
-        button { cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
-        button:hover { opacity: 0.92; }
-        input[type="text"] { outline: none; font-family: inherit; border: none; }
+        .mobile-frame { width: 100%; max-width: 440px; margin-left: auto; margin-right: auto; background-color: #f4f4f4; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); border: 1px solid #cbd5e1; position: relative; }
+        button { cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; } button:hover { opacity: 0.92; } input[type="text"] { outline: none; font-family: inherit; border: none; }
         .cursor-pointer { cursor: pointer; } .select-none { user-select: none; } .overflow-hidden { overflow: hidden; } .overflow-y-auto { overflow-y: auto; } .overflow-x-auto { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
-        th { background-color: #f8fafc; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; } th { background-color: #f8fafc; font-weight: 700; }
     </style>
 </head>
 <body class="bg-white text-slate-800 min-h-screen flex flex-col">
 
-    <!-- 階段一：實驗任務確認彈窗 -->
+    <!-- 階段一：實驗任務說明彈窗 (口語好懂版，不標示組別，點左上角可隨時重看) -->
     <div id="introScreen">
         <div class="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-2xl border border-slate-200 my-auto">
-            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full inline-block">實驗任務與情境確認（傳統搜尋引擎組）</span>
-            <h1 class="text-2xl font-bold text-slate-900 mt-3 mb-2">真無線藍牙耳機採購決策任務</h1>
-            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                你是一位平日搭捷運通勤、週末習慣在戶外慢跑與健身的上班族。接下來您將進入擬真的 <strong>Yaho! 搜尋引擎</strong>（無預設關鍵字提示），請<strong>自行思考並輸入關鍵字</strong>，搜尋各大電商與部落格，從 <strong>Model 01 ~ Model 06</strong> 中挑選出最符合條件的一款：
+            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full inline-block">實驗任務說明</span>
+            <h1 class="text-2xl font-bold text-slate-900 mt-3 mb-2">幫自己挑一副最合適的藍牙耳機</h1>
+            <p class="text-sm text-slate-600 mb-3 leading-relaxed">
+                想像你是一位上班族，平時上下班會搭捷運通勤，週末則喜歡到戶外慢跑或去健身房運動。現在你想買一副新的真無線藍牙耳機。接下來你會進入搜尋引擎畫面，<strong>就想像你平常在 Google 搜尋產品一樣</strong>，自己輸入關鍵字來查找資料，並從下面這 <strong>6 款耳機</strong>當中，挑出最符合你需求的一款：
             </p>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-xs text-slate-700">
+                <strong>🎧 可選擇的耳機款式（共 6 款）：</strong><br>
+                1. <strong>H20 Neonlite 2</strong> ｜ 2. <strong>Sooglur Pixel Buds Pro 4</strong> ｜ 3. <strong>Guava Go Pods3</strong><br>
+                4. <strong>JKT Live Beat 3</strong> ｜ 5. <strong>Naiwa Buds Pro Wi-Fi</strong> ｜ 6. <strong>Tikkak-Audio X5</strong>
+            </div>
             <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 text-sm space-y-3">
                 <div class="border-b border-amber-200 pb-2">
-                    <p class="font-bold text-red-600 mb-1">🚫 三大必要硬性條件（違反任一項即淘汰）：</p>
+                    <p class="font-bold text-red-600 mb-1">🚫 三大基本需求（只要有一項不合，就不考慮）：</p>
                     <ul class="list-disc list-inside text-slate-700 space-y-1">
-                        <li><strong>預算限制：</strong> 上限為 <strong>NT$7,500（含）以內</strong>，滿足需求下越划算越好。</li>
-                        <li><strong>戶外防護需求：</strong> 需達 <strong>IP54 等級或以上</strong>（若僅有 IPX4 則不符需求）。</li>
-                        <li><strong>多工工作需求：</strong> 必須支援 <strong>「跨設備雙裝置連線（多點連線）」</strong> 功能。</li>
+                        <li><strong>預算上限：</strong> 價格要在 <strong>NT$7,500（含）以內</strong>。</li>
+                        <li><strong>防塵防水：</strong> 因為會在戶外運動，防護等級至少要達到 <strong>IP54 或更高</strong>（如果只有 <strong>IPX4</strong> 沒有防塵，就不符合需求）。</li>
+                        <li><strong>多點連線：</strong> 上班時需要同時連電腦和手機，所以必須支援 <strong>「雙裝置連線（多點連線）」</strong>。</li>
                     </ul>
                 </div>
                 <div class="pt-1">
-                    <p class="font-bold text-blue-700 mb-1">⚖️ 決策優先順序（符合硬條件後，依序比較）：</p>
+                    <p class="font-bold text-blue-700 mb-1">⚖️ 如果同時有好幾款都符合上面的基本需求，請依下面的順序來挑選：</p>
                     <ol class="list-decimal list-inside text-slate-700 space-y-1">
-                        <li><strong>開啟 ANC 的單次聆聽續航時間：</strong> 越長越優先。</li>
-                        <li><strong>價格划算度 / 配戴重量：</strong> 優先選擇<strong>價格更划算</strong>者（若仍相同則選單耳重量較輕者）。</li>
+                        <li><strong>先比「開啟降噪（ANC）的單次續航時間」：</strong> 一次充電能聽越久的越優先。</li>
+                        <li><strong>再比「價格與重量」：</strong> 如果連開降噪的單次續航時間也一樣，就選 <strong>價格比較便宜划算</strong> 的那一款（萬一價格又相同，再選單耳重量比較輕的）。</li>
                     </ol>
                 </div>
             </div>
-            <button onclick="enterSearchEngine()" class="w-full bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md cursor-pointer text-base">
-                確認了解情境與條件，開始搜尋 &rarr;
+            <button id="introConfirmBtn" onclick="enterSearchEngine()" class="w-full bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md cursor-pointer text-base">
+                我了解挑選條件了，開始搜尋 &rarr;
             </button>
         </div>
     </div>
@@ -161,9 +95,11 @@
     <!-- 頂部常駐任務小抄列 -->
     <header class="bg-slate-900 text-white py-2 px-6 sticky top-0 z-30 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div class="flex flex-wrap items-center gap-3">
-                <span class="bg-amber-400 text-slate-900 font-bold px-2 py-0.5 rounded">條件小抄</span>
-                <span>預算 <strong>&le; $7,500</strong> | 防護 <strong>&ge; IP54 (非IPX4)</strong> | <strong>支援雙裝置</strong> | <strong>ANC續航長 + 價格划算</strong></span>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="reopenTaskModal()" class="bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded cursor-pointer flex items-center gap-1 shadow-sm">
+                    📋 查看任務說明
+                </button>
+                <span>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>可連雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
             </div>
             <button onclick="openFinalChoiceModal()" class="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs">
                 決定好了，提交最終選擇 &rarr;
@@ -171,20 +107,20 @@
         </div>
     </header>
 
-    <!-- Yaho! 初始大首頁 -->
+    <!-- Yaho! 初始大首頁 (搜尋框無預設提示詞) -->
     <div id="yahoHomeHero" class="flex-1 flex flex-col items-center justify-center p-6 -mt-10 bg-slate-50">
         <h1 class="text-6xl font-extrabold tracking-tight text-purple-700 mb-8 select-none" style="font-family: Arial, sans-serif;">
             Yaho!<span class="text-2xl font-bold text-purple-500 ml-1">奇摩搜尋</span>
         </h1>
         <div class="max-w-xl w-full flex shadow-md rounded-full overflow-hidden border-2 border-purple-600 bg-white">
-            <input id="heroSearchInput" type="text" placeholder="請輸入關鍵字搜尋（例如：藍牙耳機、Model 01、防水、續航...）" class="flex-1 px-6 py-3.5 text-base" onkeypress="if(event.key === 'Enter') triggerSearchFromHero()">
+            <input id="heroSearchInput" type="text" class="flex-1 px-6 py-3.5 text-base" onkeypress="if(event.key === 'Enter') triggerSearchFromHero()">
             <button onclick="triggerSearchFromHero()" class="bg-purple-700 text-white px-8 font-bold text-base cursor-pointer">搜尋</button>
         </div>
     </div>
 
-    <!-- Yaho! 搜尋結果頁 -->
-    <main id="yahoResultsLayout" class="hidden max-w-4xl w-full mx-auto flex-1 flex-col py-6 px-4">
-        <div class="flex flex-wrap items-center gap-6 pb-6 mb-2 border-b border-slate-200">
+    <!-- Yaho! 搜尋結果頁 (左欄搜尋結果 + 右欄紅框處兩大直立式廣告) -->
+    <main id="yahoResultsLayout" class="hidden max-w-6xl w-full mx-auto flex-1 flex-col py-6 px-4">
+        <div class="flex flex-wrap items-center gap-6 pb-6 mb-4 border-b border-slate-200">
             <div onclick="backToYahoHome()" class="text-3xl font-extrabold text-purple-700 cursor-pointer select-none">Yaho!</div>
             <div class="flex-1 max-w-2xl flex shadow-sm rounded-full overflow-hidden border border-slate-300 bg-white">
                 <input id="topSearchInput" type="text" class="flex-1 px-6 py-2.5 text-base" onkeypress="if(event.key === 'Enter') triggerSearchFromTop()">
@@ -192,39 +128,78 @@
             </div>
         </div>
 
-        <!-- 橫向購物商品廣告卡 (已鑲嵌真實圖片) -->
-        <div id="adCarouselSection" class="mb-8">
-            <div class="text-sm text-slate-500 mb-3">贊助廣告 · 購物推薦</div>
-            <div class="flex gap-4 overflow-x-auto pb-4">
-                <div onclick="openWebPage('shop_model_02')" class="min-w-[160px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
-                    <div class="text-xs text-red-600 font-bold mb-2">PChome 24h購物</div>
-                    <img src="A02_綠.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A02_綠.png';}" alt="Model 02" class="w-16 h-16 object-contain mx-auto mb-2">
-                    <div class="text-sm font-bold text-slate-800 truncate">Model 02 (A02)</div>
-                    <div class="text-base font-extrabold text-red-600 mt-1">NT$7,490</div>
+        <div class="serp-two-col">
+            <!-- 左欄：購物推薦卡 + 搜尋結果列表 -->
+            <div class="serp-left-col">
+                <div id="adCarouselSection" class="mb-8">
+                    <div class="text-sm text-slate-500 mb-3">贊助廣告 · 購物推薦</div>
+                    <div class="flex gap-3 overflow-x-auto pb-4">
+                        <div onclick="openWebPage('shop_model_02')" class="min-w-[155px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
+                            <div class="text-xs text-red-600 font-bold mb-2">PChome 24h購物</div>
+                            <img src="images/A02_綠.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='A02_綠.png';}" alt="Sooglur" class="w-16 h-16 object-contain mx-auto mb-2">
+                            <div class="text-xs font-bold text-slate-800 truncate">Sooglur Pixel Buds Pro 4</div>
+                            <div class="text-base font-extrabold text-red-600 mt-1">NT$7,490</div>
+                        </div>
+                        <div onclick="openWebPage('shop_model_03')" class="min-w-[155px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
+                            <div class="text-xs text-pink-600 font-bold mb-2">momo 購物網</div>
+                            <img src="images/A03_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='A03_黑.png';}" alt="Guava" class="w-16 h-16 object-contain mx-auto mb-2">
+                            <div class="text-xs font-bold text-slate-800 truncate">Guava Go Pods3</div>
+                            <div class="text-base font-extrabold text-pink-600 mt-1">NT$5,990</div>
+                        </div>
+                        <div onclick="openWebPage('shop_model_04')" class="min-w-[155px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
+                            <div class="text-xs text-orange-600 font-bold mb-2">蝦皮商城</div>
+                            <img src="images/A04_紫.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='A04_紫.png';}" alt="JKT" class="w-16 h-16 object-contain mx-auto mb-2">
+                            <div class="text-xs font-bold text-slate-800 truncate">JKT Live Beat 3</div>
+                            <div class="text-base font-extrabold text-orange-600 mt-1">NT$7,490</div>
+                        </div>
+                        <div onclick="openWebPage('shop_model_06')" class="min-w-[155px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
+                            <div class="text-xs text-amber-700 font-bold mb-2">SoundBuy 音響專賣</div>
+                            <img src="images/A06_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='A06_黑.png';}" alt="Tikkak" class="w-16 h-16 object-contain mx-auto mb-2">
+                            <div class="text-xs font-bold text-slate-800 truncate">Tikkak-Audio X5</div>
+                            <div class="text-base font-extrabold text-slate-900 mt-1">NT$7,980</div>
+                        </div>
+                    </div>
                 </div>
-                <div onclick="openWebPage('shop_model_03')" class="min-w-[160px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
-                    <div class="text-xs text-pink-600 font-bold mb-2">momo 購物網</div>
-                    <img src="A03_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A03_黑.png';}" alt="Model 03" class="w-16 h-16 object-contain mx-auto mb-2">
-                    <div class="text-sm font-bold text-slate-800 truncate">Model 03 (A03)</div>
-                    <div class="text-base font-extrabold text-pink-600 mt-1">NT$5,990</div>
-                </div>
-                <div onclick="openWebPage('noise_sony')" class="min-w-[160px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
-                    <div class="text-xs text-purple-700 font-bold mb-2">Yaho! 購物中心</div>
-                    <div class="w-16 h-16 flex items-center justify-center mx-auto mb-2 text-3xl">🎧</div>
-                    <div class="text-sm font-bold text-slate-800 truncate">SONY WH-1000XM5</div>
-                    <div class="text-base font-extrabold text-slate-900 mt-1">NT$11,900</div>
-                </div>
-                <div onclick="openWebPage('shop_model_04')" class="min-w-[160px] p-4 border border-slate-200 rounded-xl cursor-pointer bg-white shrink-0 text-center shadow-sm">
-                    <div class="text-xs text-orange-600 font-bold mb-2">蝦皮商城</div>
-                    <img src="A04_紫.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A04_紫.png';}" alt="Model 04" class="w-16 h-16 object-contain mx-auto mb-2">
-                    <div class="text-sm font-bold text-slate-800 truncate">Model 04 (A04)</div>
-                    <div class="text-base font-extrabold text-orange-600 mt-1">NT$7,490</div>
-                </div>
-            </div>
-        </div>
 
-        <div id="searchStatus" class="text-sm text-slate-500 mb-4 pb-2 border-b border-slate-100"></div>
-        <div id="serpContainer" class="space-y-8 pb-20"></div>
+                <div id="searchStatus" class="text-sm text-slate-500 mb-4 pb-2 border-b border-slate-100"></div>
+                <div id="serpContainer" class="space-y-8 pb-20"></div>
+            </div>
+
+            <!-- 右欄紅框處：兩塊直立式贊助廣告 -->
+            <aside class="serp-right-col">
+                <a href="https://www.youtube.com/@rebelllleber" target="_blank" rel="noopener" onclick="logEvent('click_ad', 'sidebar_top_youtube_rebelllleber')" class="ad-card-yt">
+                    <div class="p-4 flex items-center justify-between border-b border-white/10">
+                        <span class="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded">贊助廣告 · YouTube</span>
+                        <span class="text-xs text-slate-300">youtube.com</span>
+                    </div>
+                    <div class="p-6 text-center space-y-3">
+                        <div class="w-16 h-16 rounded-full bg-white text-red-600 flex items-center justify-center text-3xl font-black mx-auto shadow-lg">▶</div>
+                        <div class="text-lg font-black tracking-wide">ReBel Official Channel</div>
+                        <div class="text-xs text-amber-300 font-bold">@rebelllleber 最新影音企劃熱播中！</div>
+                        <p class="text-xs text-slate-200 leading-relaxed">立即前往 YouTube 觀看最新潮流音樂與視覺企劃，訂閱開啟小鈴鐺不錯過任何精彩首播！</p>
+                        <div class="bg-white text-slate-900 font-extrabold text-xs py-2.5 px-4 rounded-full mt-2 inline-block shadow">
+                            立即前往觀看 YouTube &rarr;
+                        </div>
+                    </div>
+                </a>
+
+                <a href="https://www.instagram.com/reel/Da7_4nWTgL8/" target="_blank" rel="noopener" onclick="logEvent('click_ad', 'sidebar_bottom_ig_reel')" class="ad-card-ig">
+                    <div class="p-4 flex items-center justify-between border-b border-white/20">
+                        <span class="bg-black/60 text-white text-[10px] font-black px-2 py-0.5 rounded">贊助廣告 · Instagram</span>
+                        <span class="text-xs text-white">instagram.com</span>
+                    </div>
+                    <div class="p-6 text-center space-y-3">
+                        <div class="w-16 h-16 rounded-2xl bg-white text-pink-600 flex items-center justify-center text-3xl font-black mx-auto shadow-lg">📱</div>
+                        <div class="text-lg font-black tracking-wide">IG 爆紅熱門 Reels 短影音</div>
+                        <div class="text-xs text-amber-300 font-bold">破萬觀看人氣精選動態！</div>
+                        <p class="text-xs text-white leading-relaxed">大家都在看的 Instagram 精選瞬間！點擊立即解鎖完整短影音內容與幕後花絮。</p>
+                        <div class="bg-white text-pink-600 font-extrabold text-xs py-2.5 px-4 rounded-full mt-2 inline-block shadow">
+                            在 Instagram 觀看 Reel &rarr;
+                        </div>
+                    </div>
+                </a>
+            </aside>
+        </div>
     </main>
 
     <!-- 網頁點擊後的彈出視窗 -->
@@ -254,12 +229,12 @@
             <h3 class="text-lg font-bold text-slate-900 mb-1">請提交您的最終購買決策</h3>
             <p class="text-xs text-slate-500 mb-4">請選出最符合任務情境與條件的一款耳機（提交後無法返回修改）：</p>
             <div class="space-y-2 mb-6">
-                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 01" class="mr-3"><span class="font-medium text-sm">Model 01（編號 A01）</span></label>
-                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 02" class="mr-3"><span class="font-medium text-sm">Model 02（編號 A02）</span></label>
-                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 03" class="mr-3"><span class="font-medium text-sm">Model 03（編號 A03）</span></label>
-                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 04" class="mr-3"><span class="font-medium text-sm">Model 04（編號 A04）</span></label>
-                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 05" class="mr-3"><span class="font-medium text-sm">Model 05（編號 A05）</span></label>
-                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 06" class="mr-3"><span class="font-medium text-sm">Model 06（編號 A06）</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 01" data-brand="H20 Neonlite 2" class="mr-3"><span class="font-medium text-sm">H20 Neonlite 2</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 02" data-brand="Sooglur Pixel Buds Pro 4" class="mr-3"><span class="font-medium text-sm">Sooglur Pixel Buds Pro 4</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 03" data-brand="Guava Go Pods3" class="mr-3"><span class="font-medium text-sm">Guava Go Pods3</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 04" data-brand="JKT Live Beat 3" class="mr-3"><span class="font-medium text-sm">JKT Live Beat 3</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 05" data-brand="Naiwa Buds Pro Wi-Fi" class="mr-3"><span class="font-medium text-sm">Naiwa Buds Pro Wi-Fi</span></label>
+                <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 06" data-brand="Tikkak-Audio X5" class="mr-3"><span class="font-medium text-sm">Tikkak-Audio X5</span></label>
             </div>
             <div class="flex gap-3">
                 <button onclick="closeFinalChoiceModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium cursor-pointer">返回繼續查資料</button>
@@ -269,8 +244,8 @@
     </div>
 
     <script>
-        // 後端 API 基礎路徑
         const API_BASE = 'http://localhost:3000/api';
+        let hasTaskStarted = false;
 
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -279,12 +254,10 @@
             });
         }
 
-        // 確保與 index.html 共用同一個 session_id，若直接開啟本頁則自動建立備用 ID
         if (!localStorage.getItem('participant_id')) localStorage.setItem('participant_id', 'U' + Math.floor(1000 + Math.random() * 9000));
         if (!localStorage.getItem('session_id')) localStorage.setItem('session_id', generateUUID());
         localStorage.setItem('condition', 'traditional');
 
-        // 統一串接後端 log-event API
         async function logEvent(eventType, targetId, metadata = {}) {
             const eventData = {
                 event_id: generateUUID(),
@@ -297,625 +270,540 @@
                 metadata: metadata
             };
             console.log('📊 [API 傳送 -> log-event]:', eventData);
-            try {
-                await fetch(`${API_BASE}/log-event`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(eventData)
-                });
-            } catch (e) {}
+            try { await fetch(`${API_BASE}/log-event`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(eventData) }); } catch (e) {}
+        }
+
+        function imgTag(file, cls) {
+            return `<img src="images/${file}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${file}';}" class="${cls}">`;
+        }
+
+        // =========================================================================
+        // 🛍️ 全平台超豐富電商商品頁生成引擎 (100% 還原 9 張 momo 截圖的所有豐富細節與區塊！)
+        // =========================================================================
+        function buildRichStorePage(cfg) {
+            const mainVisual = cfg.mainImg
+                ? imgTag(cfg.mainImg, 'w-48 h-48 object-contain mb-2')
+                : `<div class="text-6xl mb-4">${cfg.emoji || '🎧'}</div>`;
+
+            const thumbsHtml = (cfg.thumbs && cfg.thumbs.length > 0)
+                ? `<div class="flex gap-2 my-2">${cfg.thumbs.map(t => imgTag(t, 'w-10 h-10 object-contain border rounded bg-white p-0.5 shadow-sm')).join('')}</div>`
+                : '';
+
+            return `
+                <div class="mobile-frame text-slate-800 pb-0">
+                    <!-- 1. 頂部平台導覽列 + 5 大分頁籤 (對應截圖頂部) -->
+                    <div class="sticky top-0 bg-white z-40 border-b border-gray-200">
+                        <div class="flex items-center px-3 py-2 gap-2">
+                            <span class="text-gray-500 text-xl font-light cursor-pointer" onclick="closeDocumentModal()">&lsaquo;</span>
+                            <span class="text-gray-500 text-lg cursor-pointer">&#9776;</span>
+                            <div class="flex items-center gap-1">
+                                <span class="font-black text-base tracking-tighter leading-none" style="color:${cfg.themeColor};">${cfg.platformShort}</span>
+                                <span class="bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">${cfg.badgeText}</span>
+                            </div>
+                            <div class="flex-1 border rounded-full px-3 py-1 text-xs text-gray-500 bg-gray-50 flex items-center justify-between" style="border-color:${cfg.themeColor};">
+                                <span class="truncate">${cfg.brandName}</span>
+                            </div>
+                            <span class="text-gray-400 text-base">🕒</span>
+                        </div>
+                        <div class="grid grid-cols-5 text-center text-xs font-medium text-gray-600 border-t border-gray-100">
+                            <div class="py-2 border-b-2 font-bold" style="border-color:${cfg.themeColor}; color:${cfg.themeColor};">商品</div>
+                            <div class="py-2">評價</div>
+                            <div class="py-2">詳情</div>
+                            <div class="py-2">規格</div>
+                            <div class="py-2">推薦</div>
+                        </div>
+                    </div>
+
+                    <!-- 2. 主視覺圖片區 + 官方授權紅金橫幅 (對應截圖 6) -->
+                    <div class="bg-white relative">
+                        <div class="p-5 flex flex-col items-center justify-center aspect-square bg-slate-50 relative">
+                            <div class="absolute top-3 left-4 flex items-center gap-1.5">
+                                <div class="w-7 h-7 rounded-full text-white flex items-center justify-center font-black text-xs" style="background:${cfg.themeColor};">${cfg.code}</div>
+                                <span class="font-black tracking-widest text-slate-700 text-xs">${cfg.brandName}</span>
+                            </div>
+                            ${mainVisual}
+                            ${thumbsHtml}
+                            <div class="text-xs text-slate-500 mt-1">可選配色：${cfg.colors}</div>
+                            <span class="absolute bottom-14 right-0 bg-stone-600 text-white text-xs px-2.5 py-1 rounded-l-md">官方正品</span>
+                            <span class="absolute bottom-3 right-3 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">1/${(cfg.thumbs && cfg.thumbs.length) || 5}</span>
+                        </div>
+                        <div class="flex items-center bg-amber-50 border-y border-amber-200">
+                            <div class="bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-r-full shrink-0">官方授權</div>
+                            <div class="px-3 text-xs font-extrabold text-slate-900 truncate">獨家滿額送 <span class="text-red-600 italic text-sm">10%</span> 限量回饋！</div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 標題、促銷價与熱銷金賞橫幅 (對應截圖 2 & 6) -->
+                    <div class="bg-white p-3.5 border-b border-gray-100">
+                        <div class="flex justify-between items-center text-[11px] mb-1">
+                            <span class="text-red-700 font-bold">${cfg.slogan}</span>
+                            <span class="text-gray-400">品號：${cfg.sku}</span>
+                        </div>
+                        <div class="inline-block bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded mr-1">速 最快今日出貨</div>
+                        <h1 class="text-sm font-bold text-slate-900 leading-snug mt-1">${cfg.fullTitle}</h1>
+                        <div class="flex items-baseline gap-2 mt-3">
+                            <span class="text-2xl font-black" style="color:${cfg.themeColor};">$${cfg.price}</span>
+                            <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">網路促銷價</span>
+                            <span class="text-xs text-gray-500">總銷量 &gt; ${cfg.sales}</span>
+                        </div>
+                        <div class="text-[11px] text-gray-400 line-through mt-0.5">$${cfg.origPrice} 市售價</div>
+                    </div>
+
+                    <div class="bg-rose-50 px-3.5 py-2 flex justify-between items-center text-xs border-b border-gray-100">
+                        <div><span class="text-red-600 font-bold">《入圍》</span>真無線藍牙耳機 <span class="text-red-600 font-bold">平台熱銷排行榜</span></div>
+                        <span class="text-red-600 text-[11px]">查看 &gt;</span>
+                    </div>
+
+                    <!-- 4. 領取平台折價券 (對應截圖 2) -->
+                    <div class="bg-white p-3.5 mt-2">
+                        <div class="flex justify-between items-center mb-2.5">
+                            <span class="text-xs font-bold border-l-4 pl-2" style="border-color:${cfg.themeColor};">領取專屬折價券</span>
+                            <span class="text-[11px] text-gray-400">看更多 &gt;</span>
+                        </div>
+                        <div class="flex gap-2 overflow-x-auto pb-1">
+                            <div class="flex border border-pink-200 rounded-lg overflow-hidden shrink-0 w-60 shadow-sm">
+                                <div class="text-white p-2.5 flex flex-col justify-center items-center w-20" style="background:${cfg.themeColor};">
+                                    <div class="text-sm font-black">折$300</div>
+                                    <div class="bg-white text-[9px] font-bold px-1 rounded mt-1" style="color:${cfg.themeColor};">單品券</div>
+                                </div>
+                                <div class="p-2 flex-1 bg-white flex flex-col justify-between text-[10px]">
+                                    <div>
+                                        <div class="font-bold text-slate-800 text-xs">滿$3,500可使用</div>
+                                        <div class="text-gray-500">效期：2026/10/25 23:59</div>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <span class="text-gray-400">(指定商品)</span>
+                                        <span class="text-white px-2 py-0.5 rounded-full text-[9px] font-bold" style="background:${cfg.themeColor};">立即領取</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex border border-pink-200 rounded-lg overflow-hidden shrink-0 w-24 shadow-sm">
+                                <div class="text-white p-2.5 flex flex-col justify-center items-center w-full" style="background:${cfg.themeColor};">
+                                    <div class="text-sm font-black">94折</div>
+                                    <div class="bg-white text-[9px] font-bold px-1 rounded mt-1" style="color:${cfg.themeColor};">折價券</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. 配送、保固、規格選擇與優惠活動 (對應截圖 2 & 3) -->
+                    <div class="bg-white mt-2 text-xs divide-y">
+                        <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">VIP權益</span><span class="text-slate-800">加入平台 VIP 會員享專屬點數雙倍送</span></div>
+                        <div class="flex p-3 items-center"><span class="w-20 text-gray-500 shrink-0">商品規格</span>
+                            <span class="border border-gray-300 rounded px-2.5 py-1 bg-gray-50 font-medium">${cfg.colors} &#9662;</span>
+                        </div>
+                        <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">保固資訊</span><span>台灣代理商公司貨 · 原廠保固 1 年 175 天</span></div>
+                        <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">付款方式</span><span class="leading-relaxed">信用卡｜無卡分期｜貨到付款｜行動支付<br><span class="text-gray-500">刷聯名卡享 3% 回饋，上限翻倍至 2 千</span></span></div>
+                        <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">配送方式</span><span class="leading-relaxed">快速到貨/離島配送 <span class="text-gray-400">滿$490免運</span><br>超商取貨/i郵箱/門市取貨</span></div>
+                        <div class="flex p-3 justify-between items-center"><span class="w-20 text-gray-500 shrink-0">品牌旗艦</span><span class="flex-1 font-bold">${cfg.brandName} 官方旗艦館 · <span class="text-blue-600">追蹤</span></span><span class="text-gray-400">進店逛逛 &gt;</span></div>
+                    </div>
+
+                    <div class="bg-white mt-2 p-3.5 text-xs space-y-2">
+                        <div class="font-bold border-l-4 pl-2 mb-2" style="border-color:${cfg.themeColor};">可參加以下優惠活動</div>
+                        <div class="flex gap-2 items-start"><span class="bg-rose-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0">登記送</span><span class="text-slate-700 leading-relaxed">累積滿 3,000 元送 150 點｜滿 12,000 元送 300 點</span></div>
+                        <div class="flex gap-2 items-start"><span class="bg-rose-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0">滿額贈</span><span class="text-slate-700">單筆滿 1,500 元送 10% 點數回饋（上限 350 點）</span></div>
+                    </div>
+
+                    <!-- 6. 優惠加購商品區 (對應截圖 4 & 5) -->
+                    <div class="bg-white mt-2 p-3.5">
+                        <div class="flex justify-between items-center mb-2.5">
+                            <span class="text-xs font-bold border-l-4 pl-2" style="border-color:${cfg.themeColor};">優惠加購商品 (6)</span>
+                            <span class="text-[11px] text-gray-400">全部商品 &gt;</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div class="border rounded-lg p-2 bg-slate-50"><div class="text-2xl mb-1">🔌</div><div class="truncate text-[11px]">Type-C 快充線</div><div class="font-bold text-red-600 mt-0.5">$470</div></div>
+                            <div class="border rounded-lg p-2 bg-slate-50"><div class="text-2xl mb-1">🖱️</div><div class="truncate text-[11px]">靜音無線滑鼠</div><div class="font-bold text-red-600 mt-0.5">$888</div></div>
+                            <div class="border rounded-lg p-2 bg-slate-50"><div class="text-2xl mb-1">📱</div><div class="truncate text-[11px]">鋁合金手機架</div><div class="font-bold text-red-600 mt-0.5">$199</div></div>
+                        </div>
+                    </div>
+
+                    <!-- 7. 商品評價區塊 (對應截圖 4 & 8) -->
+                    <div class="bg-white mt-2 p-3.5">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold border-l-4 pl-2" style="border-color:${cfg.themeColor};">商品評價</span>
+                            <span class="text-[11px] text-gray-500">查看全部(${cfg.reviewsCount}) &gt;</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs pb-3 border-b border-gray-100">
+                            <span class="text-amber-400 text-sm">★★★★★</span>
+                            <span class="font-bold">${cfg.rating}</span>
+                            <span class="text-gray-400">(${cfg.reviewsCount}則評價)</span>
+                            <span class="text-gray-300">|</span>
+                            <span class="font-bold" style="color:${cfg.themeColor};">總銷量 &gt; ${cfg.sales}</span>
+                        </div>
+                        <div class="py-2.5 border-b border-gray-100 text-xs">
+                            <div class="flex justify-between text-gray-400 text-[11px]"><span>*宗* &nbsp; 2026/10/22</span><span>👍 5</span></div>
+                            <div class="text-amber-400 text-[11px] my-0.5">★★★★★ <span class="text-gray-400 ml-1">規格：${cfg.colors.split('、')[0]}</span></div>
+                            <div class="text-slate-700 mt-1">${cfg.review1}</div>
+                        </div>
+                        <div class="py-2.5 text-xs">
+                            <div class="flex justify-between text-gray-400 text-[11px]"><span>*思* &nbsp; 2026/10/22</span><span>👍 3</span></div>
+                            <div class="text-amber-400 text-[11px] my-0.5">★★★★★ <span class="text-gray-400 ml-1">規格：${cfg.colors.split('、')[0]}</span></div>
+                            <div class="text-slate-700 mt-1">${cfg.review2}</div>
+                        </div>
+                    </div>
+
+                    <!-- 8. 圖文詳情與核心規格 (對應截圖 8 & 9) -->
+                    <div class="bg-white mt-2 p-3.5">
+                        <div class="text-xs font-bold border-l-4 pl-2 mb-3" style="border-color:${cfg.themeColor};">圖文詳情（核心規格一覽）</div>
+                        <ul class="text-xs space-y-1.5 text-slate-800 font-bold mb-4">
+                            <li>&#9658; 單次續航：開啟 ANC <strong>${cfg.ancOn}</strong> / 關閉 ANC <strong>${cfg.ancOff}</strong>（搭充電盒 <strong>${cfg.caseBat}</strong>）</li>
+                            <li>&#9658; 防護等級：<strong>${cfg.ip}</strong></li>
+                            <li>&#9658; 多點連線：<strong>${cfg.mp}</strong></li>
+                        </ul>
+
+                        <div class="text-red-600 font-extrabold text-xs mb-1">${cfg.slogan}</div>
+                        <div class="text-blue-700 font-bold text-xs leading-relaxed mb-2">
+                            續航表現｜開啟 ANC 單次 ${cfg.ancOn}，搭充電盒 ${cfg.caseBat}<br>
+                            聲學架構｜${cfg.driver}，${cfg.ancSpec}<br>
+                            連線編碼｜${cfg.bt}，支援 ${cfg.codec}
+                        </div>
+                        <div class="text-xs text-slate-700 leading-relaxed space-y-1.5 bg-slate-50 p-3 rounded-lg border">
+                            <div><strong>官方售價｜</strong> NT$ ${cfg.price}</div>
+                            <div><strong>防水防塵｜</strong> <span class="${cfg.ipWarn ? 'text-red-600 font-bold' : 'text-emerald-700 font-bold'}">${cfg.ip}</span></div>
+                            <div><strong>雙裝置連線｜</strong> <span class="${cfg.mpWarn ? 'text-red-600 font-bold' : 'text-emerald-700 font-bold'}">${cfg.mp}</span></div>
+                            <div><strong>單次續航｜</strong> ANC 開啟 <strong>${cfg.ancOn}</strong> ／ ANC 關閉 <strong>${cfg.ancOff}</strong></div>
+                            <div><strong>含盒續航｜</strong> ${cfg.caseBat}</div>
+                            <div><strong>單耳重量｜</strong> <strong>${cfg.weight}</strong></div>
+                            <div><strong>充電快充｜</strong> ${cfg.charge}</div>
+                            <div><strong>可選配色｜</strong> ${cfg.colors}</div>
+                        </div>
+                    </div>
+
+                    <!-- 9. 藍底長效續航視覺海報 + 雙格配對快充圖 (對應截圖 5 & 7) -->
+                    <div class="bg-momo-cyan text-white p-6 text-center">
+                        <h3 class="text-lg font-extrabold mb-2">長效電力續航</h3>
+                        <p class="text-xs leading-relaxed mb-5">
+                            開啟 ANC 主動降噪單次電力可達 ${cfg.ancOn} 播放時間，關閉降噪可達 ${cfg.ancOff}，搭配充電盒總續航達 ${cfg.caseBat}。
+                        </p>
+                        <div class="bg-sky-600/50 rounded-2xl p-4 max-w-xs mx-auto border border-white">
+                            <div class="text-3xl mb-2">🔋</div>
+                            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-white">
+                                <div>
+                                    <div class="text-[11px]">ANC 單次電力</div>
+                                    <div class="text-xl font-black">${cfg.ancOn}</div>
+                                </div>
+                                <div>
+                                    <div class="text-[11px]">搭充電盒</div>
+                                    <div class="text-xl font-black">${cfg.caseShort}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white grid grid-cols-2 border-b text-xs">
+                        <div class="p-4 flex flex-col justify-center">
+                            <div class="font-extrabold text-sm text-slate-900 mb-1">${cfg.bt} 穩定連線</div>
+                            <p class="text-slate-600 text-[11px] leading-relaxed">連線穩定低延遲，多點連線狀態：${cfg.mp}。</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 flex items-center justify-center">${mainVisual}</div>
+                        <div class="bg-sky-500 text-white p-4 flex items-center justify-center text-center font-black text-sm">⚡ 極速快充<br>與充電盒補給</div>
+                        <div class="p-4 flex flex-col justify-center">
+                            <div class="font-extrabold text-sm text-slate-900 mb-1">便捷充電規格</div>
+                            <p class="text-slate-600 text-[11px] leading-relaxed">${cfg.charge}。</p>
+                        </div>
+                    </div>
+
+                    <!-- 10. 音場特色表格 + 粉紅通話海報 (對應截圖 1) -->
+                    <div class="bg-white p-3.5">
+                        <div class="text-xs font-bold mb-2">專屬音場模式與使用情境</div>
+                        <table class="text-[11px] text-center border-slate-300">
+                            <tr class="bg-sky-500 text-white font-bold">
+                                <td class="bg-stone-600 text-white w-16">音場特色</td>
+                                <td>SIGNATURE</td>
+                                <td>BALANCED</td>
+                                <td>BASS BOOST</td>
+                            </tr>
+                            <tr>
+                                <td class="bg-stone-600 text-white font-bold">強化效果</td>
+                                <td>人聲、低音</td>
+                                <td>均衡原音</td>
+                                <td>低音、重低音</td>
+                            </tr>
+                            <tr>
+                                <td class="bg-stone-600 text-white font-bold">適合情境</td>
+                                <td>日常通勤聽歌</td>
+                                <td>Podcast / 會議</td>
+                                <td>健身房 / 慢跑</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="bg-pink-500 text-white p-6 text-center">
+                        <h3 class="text-lg font-extrabold mb-2">清晰通話 · 降噪體驗</h3>
+                        <p class="text-xs leading-relaxed">
+                            搭載 ${cfg.ancSpec} 與清晰收音麥克風，提供高品質通話與降噪表現。
+                        </p>
+                    </div>
+
+                    <!-- 11. 底部常駐：橘色到貨提示條 + 購物車/直接購買列 (對應截圖底部) -->
+                    <div class="sticky bottom-0 z-40 bg-white border-t border-gray-200 px-2 pt-1.5 pb-2 shadow-lg">
+                        <div class="bg-momo-orange text-white text-center text-xs font-bold py-1 rounded-md mb-1.5 shadow-sm">
+                            預計明天 10/23 前到貨
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex flex-col items-center justify-center px-2 text-[10px] text-gray-500 cursor-pointer">
+                                <span class="text-sm">♡</span><span>追蹤</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center px-2 text-[10px] text-gray-500 cursor-pointer">
+                                <span class="text-sm">📋</span><span>清單</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center px-2 text-[10px] text-gray-500 cursor-pointer">
+                                <span class="text-sm">🛒</span><span>購物車</span>
+                            </div>
+                            <button class="flex-1 bg-momo-blue text-white font-bold py-2.5 rounded-md text-xs">加入購物車</button>
+                            <button class="flex-1 text-white font-bold py-2.5 rounded-md text-xs" style="background:${cfg.themeColor};">直接購買</button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         let currentOpenPageId = null;
 
+        // 搜尋結果資料庫：嚴格 2:8 比例 (2 篇完整 PDF 部落格 + 8 個超豐富電商商品頁)
         const webPages = [
-            // 1. 雜訊商品：SONY WH-1000XM5
+            // [雜訊耳機 1/2] Soli WF-1000XM5
             {
                 id: "noise_sony",
                 icon: "🟣",
                 sitename: "Yaho! 奇摩購物中心",
-                url: "buy.yaho.com.tw > item > sony-wh-1000xm5",
-                title: "SONY 索尼 WH-1000XM5 無線藍牙降噪耳罩式耳機 (台灣公司貨)",
-                snippet: "降噪業界指標！頂級耳罩式設計，定價 NT$11,900。具備極致降噪與超長 30 小時續航，商務人士出差飛行首選...",
-                keywords: ["sony", "wh-1000xm5", "耳罩", "耳機", "價格", "購物", "降噪", "藍牙耳機"],
-                content: `
-                    <div class="bg-slate-100 min-h-full text-slate-800">
-                        <div class="bg-yaho-purple text-white px-6 py-3 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl font-black tracking-tight">Yaho!</span>
-                                <span class="text-sm bg-amber-400 text-slate-900 px-2 py-0.5 rounded font-bold">購物中心</span>
-                            </div>
-                            <div class="text-xs">購物車(0) | 訂單查詢</div>
-                        </div>
-                        <div class="max-w-4xl mx-auto p-4 sm:p-6">
-                            <div class="text-xs text-slate-500 mb-3">首頁 &gt; 藍牙耳機 &gt; 耳罩式耳機 &gt; SONY 索尼</div>
-                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="bg-slate-50 border rounded-xl flex flex-col items-center justify-center p-8 aspect-square relative">
-                                    <span class="absolute top-3 left-3 bg-purple-700 text-white text-xs font-bold px-2.5 py-1 rounded">原廠公司貨</span>
-                                    <div class="text-6xl mb-3">🎧</div>
-                                    <div class="text-slate-400 text-sm font-medium">SONY WH-1000XM5 耳罩式耳機</div>
-                                </div>
-                                <div class="flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-2 mb-2">
-                                            <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded">24h快速到貨</span>
-                                            <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-0.5 rounded">最高回饋 10% 超贈點</span>
-                                        </div>
-                                        <h1 class="text-xl font-bold text-slate-900 leading-snug mb-3">SONY 索尼 WH-1000XM5 無線藍牙主動式降噪耳罩式耳機</h1>
-                                        <div class="bg-purple-50 border border-purple-100 rounded-lg p-4 mb-4">
-                                            <div class="text-xs text-slate-400 line-through">建議售價 $12,900</div>
-                                            <div class="flex items-baseline gap-2 mt-1">
-                                                <span class="text-xs font-bold text-purple-800">網路價</span>
-                                                <span class="text-3xl font-black text-red-600">NT$11,900</span>
-                                            </div>
-                                        </div>
-                                        <ul class="text-xs text-slate-600 space-y-2 mb-6 list-disc list-inside">
-                                            <li>HD 降噪處理器 QN1 + V1，業界頂級耳罩式降噪</li>
-                                            <li>高達 30 小時超長電池續航力（重量約 250g）</li>
-                                            <li>注意：超出 $7,500 預算，且無防水防塵認證</li>
-                                        </ul>
-                                    </div>
-                                    <div class="flex gap-3">
-                                        <button class="flex-1 bg-amber-500 text-white font-bold py-3 rounded-lg text-sm">加入購物車</button>
-                                        <button class="flex-1 bg-purple-700 text-white font-bold py-3 rounded-lg text-sm">立即購買</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `
+                url: "buy.yaho.com.tw > item > soli-wf-1000xm5",
+                title: "Soli WF-1000XM5 旗艦真無線藍牙降噪耳機 (快充 3 分鐘播 1 小時)",
+                snippet: "官方網路價 NT$8,990。充電約 3 分鐘播放約 1 小時，AAC/SBC 開啟 ANC 單次續航最長 8 小時，具備等化器與 DSEE Extreme...",
+                keywords: ["soli", "wf-1000xm5", "耳機", "價格", "購物", "降噪", "藍牙耳機", "續航", "快充", "ldac", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "Yaho!購物", badgeText: "旗艦館🔥", themeColor: "#5b189a", code: "SL",
+                    brandName: "Soli WF-1000XM5", emoji: "🎧", colors: "黑、銀",
+                    slogan: "出門前的幾分鐘也別浪費！快充 3 分鐘播 1 小時", sku: "8810095",
+                    fullTitle: "Soli WF-1000XM5 旗艦高音質主動降噪真無線藍牙耳機 (支援 LDAC / AAC / SBC)",
+                    price: "8,990", origPrice: "9,900", sales: "1.5萬", rating: "4.8", reviewsCount: "1,420",
+                    ancOn: "最長 8 小時 (LDAC開ANC最長5h)", ancOff: "最長 12 小時", caseBat: "最高 24 小時 (ANC開啟)", caseShort: "24H",
+                    ip: "IPX4 (無防塵認證，且售價超出 $7,500 預算)", ipWarn: true,
+                    mp: "支援多點連線", mpWarn: false,
+                    weight: "5.9 g", driver: "8.4mm 驅動單體", ancSpec: "整合處理器 V2 主動降噪",
+                    bt: "Bluetooth 5.3", codec: "LDAC、AAC、SBC", charge: "快充約 3 分鐘播放約 1 小時；支援 Qi 無線充電",
+                    review1: "音質跟降噪真的強，快充3分鐘就能聽1小時，不過價格 $8,990 比較高一點。",
+                    review2: "開 LDAC 又開降噪的時候電力掉比較快（約5小時），而且非本次候選池6款內產品。"
+                })
             },
 
-            // 2. 雜訊商品：KWorld 廣寰 S453
+            // [雜訊耳機 2/2] Tecnick EAH-AZ100
             {
                 id: "noise_cheap",
                 icon: "🔴",
                 sitename: "PChome 24h 購物",
-                url: "24h.pchome.com.tw > prod > kworld-s453",
-                title: "KWorld 廣寰 音樂入耳式有線耳機麥克風 S453 - PChome 24h購物",
-                snippet: "下殺特賣 NT$139。經典 3.5mm 有線設計，免充電、隨插即用，適合學生與小資族群的備用耳機...",
-                keywords: ["有線", "便宜", "入耳式", "耳機", "價格", "購物", "廣寰", "pchome"],
-                content: `
-                    <div class="bg-slate-100 min-h-full text-slate-800">
-                        <div class="bg-pchome-red text-white px-6 py-3 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl font-black italic tracking-tighter">PChome</span>
-                                <span class="bg-white text-red-600 text-xs font-extrabold px-1.5 py-0.5 rounded">24h購物</span>
-                            </div>
-                            <div class="text-xs">全台灣保證 24 小時到貨！</div>
-                        </div>
-                        <div class="max-w-4xl mx-auto p-4 sm:p-6">
-                            <div class="bg-white rounded-lg shadow-sm border p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="bg-slate-50 border rounded flex flex-col items-center justify-center p-8 aspect-square">
-                                    <div class="text-6xl mb-2">🔌</div>
-                                    <div class="text-xs text-slate-400">3.5mm 傳統有線耳機</div>
-                                </div>
-                                <div>
-                                    <span class="bg-red-600 text-white text-xs px-2 py-0.5 font-bold rounded">24h到貨</span>
-                                    <h1 class="text-xl font-bold mt-2 mb-3">KWorld 廣寰 音樂入耳式有線耳機麥克風 S453</h1>
-                                    <div class="bg-red-50 border-l-4 border-red-600 p-4 mb-4">
-                                        <span class="text-xs text-slate-500">網路價</span>
-                                        <div class="text-3xl font-black text-red-600">$139</div>
-                                    </div>
-                                    <ul class="text-xs text-slate-600 space-y-1.5 mb-6 list-disc list-inside">
-                                        <li>採用 3.5mm 音源接頭（有線連接，非真無線藍牙耳機）</li>
-                                        <li>無主動降噪（ANC）、無雙裝置藍牙連線、無防水認證</li>
-                                    </ul>
-                                    <button class="w-full bg-pchome-red text-white font-bold py-3 rounded">加入 24h 購物車</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `
+                url: "24h.pchome.com.tw > prod > tecnick-eah-az100",
+                title: "Tecnick EAH-AZ100 旗艦高音質真無線藍牙耳機 - PChome 24h購物",
+                snippet: "網路價 NT$9,990。AAC 模式開啟 ANC 單次標示約 10 小時、含盒約 28 小時；支援 LDAC / LC3 多種編碼...",
+                keywords: ["tecnick", "eah-az100", "az100", "耳機", "價格", "購物", "續航", "pchome", "藍牙耳機", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "PChome 24h", badgeText: "24h到貨⚡", themeColor: "#e60012", code: "AZ",
+                    brandName: "Tecnick EAH-AZ100", emoji: "🎶", colors: "銀、黑",
+                    slogan: "日系發燒級調音！AAC 模式開啟 ANC 單次約 10 小時", sku: "9002100",
+                    fullTitle: "Tecnick EAH-AZ100 旗艦高解析真無線藍牙降噪耳機 (支援 AAC / LDAC / LC3)",
+                    price: "9,990", origPrice: "10,990", sales: "8,500", rating: "4.9", reviewsCount: "890",
+                    ancOn: "約 10 小時 (AAC) / 約 7 小時 (LDAC)", ancOff: "約 12 小時", caseBat: "約 28 小時", caseShort: "28H",
+                    ip: "IPX4 (僅防潑水無防塵，且售價 $9,990 超出預算)", ipWarn: true,
+                    mp: "支援多點連線", mpWarn: false,
+                    weight: "5.9 g", driver: "10mm 磁性流體動圈", ancSpec: "雙重混合主動降噪",
+                    bt: "Bluetooth 5.3", codec: "LDAC、LC3、AAC、SBC", charge: "充電至少 15 分鐘可使用約 90 分鐘",
+                    review1: "AAC 模式下續航有 10 小時很猛，但價格 $9,990 爆預算了。",
+                    review2: "注意不同編碼續航差很多，開 LDAC 剩 7 小時，通話時間約 6 小時。"
+                })
             },
 
-            // 3. Model 01 (Yaho! 奇摩購物中心 - 綁定 A01_黑.png / A01_白.png / A01_粉霧金.png)
+            // [目標耳機 1/6] H20 Neonlite 2 (原 Model 01)
             {
                 id: "shop_model_01",
                 icon: "🟣",
                 sitename: "Yaho! 奇摩購物中心",
-                url: "buy.yaho.com.tw > item > tws-model-01",
-                title: "【官方旗艦】Model 01 (A01) 雙單體 HiFi 主動降噪真無線藍牙耳機",
-                snippet: "官方參考定價 NT$7,490。搭載 10mm 低音 + 5.3mm 高音雙單體、最新 Bluetooth 6.1 與 IP57 高等級防塵防水，支援雙裝置自動切換...",
-                keywords: ["model", "01", "a01", "耳機", "價格", "購物", "防水", "防塵", "ip57", "雙裝置", "續航", "藍牙耳機"],
-                content: `
-                    <div class="bg-slate-100 min-h-full text-slate-800">
-                        <div class="bg-yaho-purple text-white px-4 sm:px-8 py-3 flex items-center justify-between shadow">
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl font-black tracking-tight">Yaho!</span>
-                                <span class="text-sm font-bold bg-amber-400 text-slate-900 px-2 py-0.5 rounded">購物中心</span>
-                                <span class="text-xs text-purple-200 hidden sm:inline ml-2">品牌旗艦館 · 100% 正品保障</span>
-                            </div>
-                            <div class="text-xs">領取折價券 | 購物車 (0)</div>
-                        </div>
-                        <div class="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-                            <div class="text-xs text-slate-500">Yaho!購物中心 &gt; 3C數位 &gt; 真無線藍牙耳機 &gt; <strong>Model 01 (編號 A01)</strong></div>
-                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 grid grid-cols-1 md:grid-cols-12 gap-8">
-                                <div class="md:col-span-5 flex flex-col">
-                                    <div class="bg-purple-50 border border-purple-100 rounded-xl aspect-square flex flex-col items-center justify-center p-6 relative">
-                                        <span class="absolute top-3 left-3 bg-purple-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">A01 官方旗艦</span>
-                                        <span class="absolute top-3 right-3 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">IP57 防塵防水</span>
-                                        <img src="A01_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A01_黑.png';}" alt="Model 01" class="w-44 h-44 object-contain mb-2">
-                                        <div class="flex gap-2 my-1">
-                                            <img src="A01_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A01_黑.png';}" class="w-10 h-10 object-contain border rounded bg-white p-0.5" title="黑">
-                                            <img src="A01_白.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A01_白.png';}" class="w-10 h-10 object-contain border rounded bg-white p-0.5" title="白">
-                                            <img src="A01_粉霧金.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A01_粉霧金.png';}" class="w-10 h-10 object-contain border rounded bg-white p-0.5" title="粉霧金">
-                                        </div>
-                                        <div class="font-extrabold text-slate-800 text-base mt-1">Model 01 (A01)</div>
-                                        <div class="text-xs text-slate-500">配色：黑、白、粉霧金</div>
-                                    </div>
-                                </div>
-                                <div class="md:col-span-7 flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex flex-wrap gap-1.5 mb-2">
-                                            <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-0.5 rounded">快速到貨</span>
-                                            <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded">送 3% 超贈點</span>
-                                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded">支援雙裝置連線</span>
-                                        </div>
-                                        <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
-                                            【官方旗艦】Model 01 (A01) 雙單體 HiFi 主動降噪真無線藍牙耳機 | IP57 高規防塵防水・藍牙 6.1
-                                        </h1>
-                                        <p class="text-xs text-slate-500 mt-1">賣場編號：YAHO-A01-TWS | 評價 4.8 ★ (640則)</p>
-                                        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 my-4">
-                                            <div class="flex items-baseline justify-between flex-wrap gap-2">
-                                                <div>
-                                                    <span class="text-xs text-slate-500 mr-2">官方售價</span>
-                                                    <span class="text-3xl font-black text-red-600">NT$ 7,490</span>
-                                                </div>
-                                                <span class="text-xs text-emerald-700 font-bold bg-emerald-100 px-2 py-1 rounded">符合 7,500 預算內</span>
-                                            </div>
-                                        </div>
-                                        <div class="bg-slate-50 rounded-lg p-3 text-xs space-y-1.5 text-slate-700 border">
-                                            <div>🔹 <strong>聲學架構：</strong> 雙單體 (10mm 低音 + 5.3mm 高音)</div>
-                                            <div>🔹 <strong>防護等級：</strong> <strong>IP57 防塵防水</strong>（高於 IP54 標準）</div>
-                                            <div>🔹 <strong>多工連線：</strong> <strong>支援(多點自動切換)</strong></div>
-                                            <div>🔹 <strong>電力表現：</strong> 單次續航 <strong>約6h (ANC開啟)</strong> / 7.5 h (ANC關閉)；搭充電盒最高 26 小時</div>
-                                            <div>🔹 <strong>單耳重量：</strong> <strong>5.4 g</strong></div>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-3 mt-5">
-                                        <button class="flex-1 bg-amber-500 text-white font-bold py-3 rounded-xl text-sm shadow">加入購物車</button>
-                                        <button class="flex-1 bg-yaho-purple text-white font-bold py-3 rounded-xl text-sm shadow">立即結帳購買</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                                <h3 class="text-base font-bold text-purple-900 border-b-2 border-purple-700 pb-2 mb-4 inline-block">詳細規格一覽表</h3>
-                                <table class="text-xs sm:text-sm">
-                                    <tr><th class="w-1/3 bg-purple-50">產品型號</th><td class="font-bold">Model 01 (實驗編號 A01)</td></tr>
-                                    <tr><th class="bg-purple-50">官方參考定價</th><td class="text-red-600 font-bold">NT$ 7,490</td></tr>
-                                    <tr><th class="bg-purple-50">防塵防水等級</th><td class="font-bold text-emerald-700">IP57</td></tr>
-                                    <tr><th class="bg-purple-50">雙裝置多點連線</th><td class="font-bold text-emerald-700">支援(多點自動切換)</td></tr>
-                                    <tr><th class="bg-purple-50">單次續航力 (開啟 ANC)</th><td class="font-bold text-amber-700">約 6h（ANC 關閉 7.5h / 搭配充電盒最高 26 小時）</td></tr>
-                                    <tr><th class="bg-purple-50">單耳重量</th><td>5.4 g</td></tr>
-                                    <tr><th class="bg-purple-50">機身可選配色</th><td>黑、白、粉霧金</td></tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                `
+                url: "buy.yaho.com.tw > item > h20-neonlite-2",
+                title: "【官方旗艦】H20 Neonlite 2 雙單體 HiFi 主動降噪真無線藍牙耳機",
+                snippet: "官方參考定價 NT$7,490。搭載 10mm 低音 + 5.3mm 高音雙單體、最新 Bluetooth 6.1 與 IP57 高等級防塵防水，支援雙裝置多點自動切換...",
+                keywords: ["h20", "neonlite", "model", "01", "a01", "耳機", "價格", "購物", "防水", "防塵", "ip57", "雙裝置", "多點連線", "續航", "藍牙耳機", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "Yaho!購物", badgeText: "官方旗艦🔥", themeColor: "#5b189a", code: "H20",
+                    brandName: "H20 Neonlite 2", mainImg: "A01_黑.png", thumbs: ["A01_黑.png", "A01_白.png", "A01_粉霧金.png"], colors: "黑、白、粉霧金",
+                    slogan: "IP57 高規防塵防水 · 10mm+5.3mm 同軸雙單體", sku: "9399601",
+                    fullTitle: "【官方旗艦】H20 Neonlite 2 雙單體 HiFi 主動降噪真無線藍牙耳機 (IP57防塵防水 / 支援多點自動切換)",
+                    price: "7,490", origPrice: "8,290", sales: "1.8萬", rating: "4.8", reviewsCount: "1,640",
+                    ancOn: "約 6 小時", ancOff: "7.5 小時", caseBat: "最高 26 小時", caseShort: "26H",
+                    ip: "IP57 (防塵等級 5、防水等級 7，符合 ≥IP54 需求)", ipWarn: false,
+                    mp: "支援(多點自動切換)", mpWarn: false,
+                    weight: "5.4 g", driver: "雙單體(10mm低音+5.3mm高音)", ancSpec: "Adaptive ANC 自適應主動降噪",
+                    bt: "Bluetooth 6.1", codec: "SSC HiFi、AAC、SBC", charge: "Qi 無線充電；快充 10 分鐘可用 2.5 小時",
+                    review1: "IP57 防水防塵等級很高，去健身房運動流汗完全不用擔心，雙單體音質很棒！",
+                    review2: "連電腦跟手機切換很順，不過開啟 ANC 單次續航約 6 小時比較短一點，長途車程要放回充電盒補電。"
+                })
             },
 
-            // 4. Model 02 (PChome 24h 購物 - 綁定 A02_綠 / 米 / 灰 / 粉)
+            // [目標耳機 2/6] Sooglur Pixel Buds Pro 4 (原 Model 02)
             {
                 id: "shop_model_02",
                 icon: "🔴",
                 sitename: "PChome 24h 購物",
-                url: "24h.pchome.com.tw > prod > tws-model-02",
-                title: "Model 02 (A02) 極致輕巧主動降噪真無線耳機 | 4.7g 羽量配戴 - PChome 24h購物",
-                snippet: "官方定價 NT$7,490。單耳僅 4.7g 超輕巧！搭載 Silent Seal 2.0 ANC 主動降噪，ANC 開啟單次續航達 8 小時，支援 IP54 與多點連線...",
-                keywords: ["model", "02", "a02", "耳機", "價格", "購物", "防水", "防塵", "ip54", "雙裝置", "續航", "輕", "藍牙耳機"],
-                content: `
-                    <div class="bg-slate-100 min-h-full text-slate-800">
-                        <div class="bg-pchome-red text-white px-4 sm:px-8 py-3 flex items-center justify-between shadow">
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl font-black italic tracking-tighter">PChome</span>
-                                <span class="bg-white text-red-600 text-xs font-extrabold px-2 py-0.5 rounded">24h購物</span>
-                                <span class="text-xs ml-2 hidden sm:inline">全台灣 24 小時到貨 · 遲到給 100 P幣</span>
-                            </div>
-                            <div class="text-xs">顧客中心 | 購物車</div>
-                        </div>
-                        <div class="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-                            <div class="text-xs text-slate-500">PChome 24h購物 &gt; 數位通訊 &gt; 藍牙耳機 &gt; <strong>Model 02 (A02)</strong></div>
-                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 grid grid-cols-1 md:grid-cols-12 gap-8">
-                                <div class="md:col-span-5">
-                                    <div class="border-2 border-red-500 rounded-xl aspect-square flex flex-col items-center justify-center p-6 bg-slate-50 relative">
-                                        <div class="absolute top-0 left-0 bg-pchome-red text-white text-xs font-bold px-3 py-1 rounded-br-lg">24h 閃電到貨</div>
-                                        <img src="A02_綠.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A02_綠.png';}" alt="Model 02" class="w-44 h-44 object-contain mb-2">
-                                        <div class="flex gap-1.5 my-1">
-                                            <img src="A02_米.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A02_米.png';}" class="w-8 h-8 object-contain border rounded bg-white p-0.5" title="米">
-                                            <img src="A02_綠.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A02_綠.png';}" class="w-8 h-8 object-contain border rounded bg-white p-0.5" title="綠">
-                                            <img src="A02_灰.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A02_灰.png';}" class="w-8 h-8 object-contain border rounded bg-white p-0.5" title="灰">
-                                            <img src="A02_粉.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A02_粉.png';}" class="w-8 h-8 object-contain border rounded bg-white p-0.5" title="粉">
-                                        </div>
-                                        <div class="font-extrabold text-base text-slate-900">Model 02 (A02)</div>
-                                        <div class="text-xs text-red-600 font-bold">配色：米、綠、灰、粉</div>
-                                    </div>
-                                </div>
-                                <div class="md:col-span-7 flex flex-col justify-between">
-                                    <div>
-                                        <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-2">
-                                            Model 02 (A02) 極致輕巧主動降噪真無線耳機 (Silent Seal 2.0 / 4.7g羽量 / IP54防塵防水)
-                                        </h1>
-                                        <p class="text-xs text-blue-600 mb-3">★ 單耳僅 4.7g 挑戰業界最輕巧！開啟 ANC 單次續航高達 8 小時 ★</p>
-                                        <div class="bg-red-50 border-l-4 border-red-600 p-4 mb-4">
-                                            <div class="flex items-baseline gap-3">
-                                                <span class="text-xs font-bold text-slate-600">網路價</span>
-                                                <span class="text-3xl font-black text-red-600">$7,490</span>
-                                                <span class="text-xs text-slate-400 line-through">建議售價 $7,990</span>
-                                            </div>
-                                        </div>
-                                        <ul class="text-xs sm:text-sm text-slate-700 space-y-1.5 list-disc list-inside bg-slate-50 p-3.5 rounded-lg border">
-                                            <li><strong>官方價格：</strong> NT$ 7,490（符合 $7,500 預算上限）</li>
-                                            <li><strong>防塵防水：</strong> <strong>IP54 防塵防潑水</strong>（符合運動防塵防汗需求）</li>
-                                            <li><strong>多點連線：</strong> <strong>支援(多點連線)</strong>（Multipoint）</li>
-                                            <li><strong>ANC 續航：</strong> 開啟主動降噪 <strong>單次續航 8 h</strong>（ANC關閉 12 h / 搭充電盒最高 30 小時）</li>
-                                            <li><strong>極致輕量：</strong> 單耳重量僅 <strong>4.7 g</strong></li>
-                                        </ul>
-                                    </div>
-                                    <div class="flex gap-3 mt-5">
-                                        <button class="flex-1 bg-pchome-red text-white font-bold py-3 rounded-lg text-sm shadow">立即購買 (24h到貨)</button>
-                                        <button class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-lg text-sm shadow">加入購物車</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                <div class="bg-blue-50 border-l-4 border-blue-600 px-3 py-2 font-bold text-sm text-blue-900 mb-4">本商品標準規格</div>
-                                <table class="text-xs sm:text-sm">
-                                    <tr><th class="w-1/3 bg-slate-50">型號</th><td class="font-bold">Model 02 (編號 A02)</td></tr>
-                                    <tr><th class="bg-slate-50">官方參考定價</th><td class="text-red-600 font-bold">NT$ 7,490</td></tr>
-                                    <tr><th class="bg-slate-50">防水防塵等級</th><td class="font-bold text-emerald-700">IP54</td></tr>
-                                    <tr><th class="bg-slate-50">雙裝置連線</th><td class="font-bold text-emerald-700">支援(多點連線)</td></tr>
-                                    <tr><th class="bg-slate-50">單次續航 (ANC開啟)</th><td class="font-bold text-blue-700">8 h（ANC關閉 12 h / 充電盒最高 30 小時）</td></tr>
-                                    <tr><th class="bg-slate-50">單耳重量</th><td class="font-bold">4.7 g</td></tr>
-                                    <tr><th class="bg-slate-50">機身可選配色</th><td>米、綠、灰、粉</td></tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                `
+                url: "24h.pchome.com.tw > prod > sooglur-pixel-buds-pro-4",
+                title: "Sooglur Pixel Buds Pro 4 極致輕巧主動降噪真無線耳機 | 4.7g 羽量配戴 - PChome 24h購物",
+                snippet: "官方定價 NT$7,490。單耳僅 4.7g 超輕巧！搭載 Silent Seal 2.0 ANC 主動降噪，ANC 開啟單次續航 8 小時，支援 IP54 與多點連線...",
+                keywords: ["sooglur", "pixel", "buds", "pro", "model", "02", "a02", "耳機", "價格", "購物", "防水", "防塵", "ip54", "雙裝置", "多點連線", "續航", "輕", "藍牙耳機", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "PChome 24h", badgeText: "24h閃電⚡", themeColor: "#e60012", code: "SG",
+                    brandName: "Sooglur Pixel Buds Pro 4", mainImg: "A02_綠.png", thumbs: ["A02_米.png", "A02_綠.png", "A02_灰.png", "A02_粉.png"], colors: "米、綠、灰、粉",
+                    slogan: "手機、電腦都要顧到！單耳 4.7g 羽量級無感配戴", sku: "9399602",
+                    fullTitle: "Sooglur Pixel Buds Pro 4 極致輕巧主動降噪真無線耳機 (4.7g羽量 / IP54防塵防潑水 / 支援多點連線)",
+                    price: "7,490", origPrice: "7,990", sales: "2.1萬", rating: "4.8", reviewsCount: "1,920",
+                    ancOn: "8 小時", ancOff: "12 小時", caseBat: "最高 30 小時 (未列ANC條件)", caseShort: "30H",
+                    ip: "IP54 (具防塵與防潑水等級，符合 ≥IP54 需求)", ipWarn: false,
+                    mp: "支援(多點連線)", mpWarn: false,
+                    weight: "4.7 g", driver: "11mm 訂製動圈單體", ancSpec: "Silent Seal 2.0 ANC 主動降噪",
+                    bt: "Bluetooth 5.4", codec: "AAC、SBC、Opus", charge: "Qi 無線充電；快充 5 分鐘可用 1.5 小時",
+                    review1: "單耳 4.7g 戴起來真的很輕巧，開啟 ANC 可以聽 8 小時，多點連線切筆電跟手機也很方便。",
+                    review2: "各方面都很均衡，就是定價 $7,490 比較貼近預算上限。"
+                })
             },
 
-            // 5. Model 03 (momo 購物網手機版 - 綁定 A03_黑 / A03_白 / A03_藍)
+            // [目標耳機 3/6] Guava Go Pods3 (原 Model 03 - 最佳解)
             {
                 id: "shop_model_03",
                 icon: "🍑",
                 sitename: "momo 購物網",
-                url: "www.momoshop.com.tw > goods > tws-model-03",
-                title: "【熱銷高CP】Model 03 (A03) 全天候混合主動降噪真無線耳機 - momo購物網",
-                snippet: "促銷價 NT$5,990！具備 IP54 防塵防潑水與跨設備多點連線，開啟 ANC 單次續航約 8 小時，專屬 APP 客製音場、Type-C 快充...",
-                keywords: ["model", "03", "a03", "耳機", "價格", "購物", "防水", "防塵", "ip54", "雙裝置", "續航", "划算", "momo", "藍牙耳機"],
-                content: `
-                    <div class="mobile-frame text-slate-800 pb-0">
-                        <div class="sticky top-0 bg-white z-40 border-b border-gray-200">
-                            <div class="flex items-center px-3 py-2 gap-2">
-                                <span class="text-gray-500 text-xl font-light cursor-pointer" onclick="closeDocumentModal()">&lsaquo;</span>
-                                <span class="text-gray-500 text-lg cursor-pointer">&#9776;</span>
-                                <div class="flex items-center gap-1">
-                                    <span class="font-black text-lg tracking-tighter momo-pink leading-none">momo</span>
-                                    <span class="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">新品🔥</span>
-                                </div>
-                                <div class="flex-1 border border-pink-400 rounded-full px-3 py-1 text-xs text-gray-500 bg-white flex items-center justify-between">
-                                    <span>藍牙耳機</span>
-                                </div>
-                                <span class="text-gray-400 text-base">🕒</span>
-                            </div>
-                            <div class="grid grid-cols-5 text-center text-xs font-medium text-gray-600 border-t border-gray-100">
-                                <div class="py-2 border-b-2 border-momo-pink momo-pink font-bold">商品</div>
-                                <div class="py-2">評價</div>
-                                <div class="py-2">詳情</div>
-                                <div class="py-2">規格</div>
-                                <div class="py-2">推薦</div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white relative">
-                            <div class="p-5 flex flex-col items-center justify-center aspect-square bg-slate-50 relative">
-                                <div class="absolute top-3 left-4 flex items-center gap-1.5">
-                                    <div class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center font-black text-xs">A03</div>
-                                    <span class="font-black tracking-widest text-slate-700 text-sm">MODEL 03</span>
-                                </div>
-                                <img src="A03_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A03_黑.png';}" alt="Model 03" class="w-48 h-48 object-contain mb-2">
-                                <div class="flex gap-2 my-1">
-                                    <img src="A03_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A03_黑.png';}" class="w-10 h-10 object-contain border rounded bg-white p-0.5" title="黑">
-                                    <img src="A03_白.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A03_白.png';}" class="w-10 h-10 object-contain border rounded bg-white p-0.5" title="白">
-                                    <img src="A03_藍.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A03_藍.png';}" class="w-10 h-10 object-contain border rounded bg-white p-0.5" title="藍">
-                                </div>
-                                <div class="text-xs text-slate-500 mt-1">可選配色：黑、白、藍</div>
-                                <span class="absolute bottom-14 right-0 bg-stone-600 text-white text-xs px-2.5 py-1 rounded-l-md">官方</span>
-                                <span class="absolute bottom-3 right-3 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">1/3</span>
-                            </div>
-                            <div class="flex items-center bg-amber-50 border-y border-amber-200">
-                                <div class="bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-r-full shrink-0">官方授權</div>
-                                <div class="px-3 text-xs font-extrabold text-slate-900 truncate">獨家滿額送 <span class="text-red-600 italic text-sm">10%</span> 限量！</div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-3.5 border-b border-gray-100">
-                            <div class="flex justify-between items-center text-[11px] mb-1">
-                                <span class="text-red-700 font-bold">CP值再升級！同級降噪耳機銷售冠軍</span>
-                                <span class="text-gray-400">品號：9399603</span>
-                            </div>
-                            <div class="inline-block bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded mr-1">速 最快今日</div>
-                            <h1 class="text-sm font-bold text-slate-900 leading-snug mt-1">
-                                Model 03 (A03) 全天候混合主動降噪真無線藍牙耳機 (IP54防塵防水 / 支援雙裝置連線 / ANC續航約8h)
-                            </h1>
-                            <div class="flex items-baseline gap-2 mt-3">
-                                <span class="text-2xl font-black momo-pink">$5,990</span>
-                                <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">促銷價</span>
-                                <span class="text-xs text-gray-500">總銷量 &gt; 3萬</span>
-                            </div>
-                            <div class="text-[11px] text-gray-400 line-through mt-0.5">$7,490 市售價</div>
-                        </div>
-
-                        <div class="bg-white mt-2 p-3.5">
-                            <div class="text-xs font-bold border-l-4 border-momo-pink pl-2 mb-3">圖文詳情（核心規格）</div>
-                            <ul class="text-xs space-y-1.5 text-slate-800 font-medium mb-4">
-                                <li>&#9658; 開啟 ANC 單次電力 <strong>約8h</strong>（ANC關閉 11 h），搭充電盒 <strong>最高28小時</strong></li>
-                                <li>&#9658; <strong>IP54 防塵防水認證</strong>，戶外慢跑、健身房防汗防雨</li>
-                                <li>&#9658; <strong>支援(多點連線)</strong>，手機/電腦同時配對秒切換</li>
-                            </ul>
-                            <div class="text-xs text-slate-700 leading-relaxed space-y-1">
-                                <div>官方售價 | <strong>NT$ 5,990</strong>（符合 $7,500 預算且極具價格優勢）</div>
-                                <div>日常防護 | <strong>IP54 防塵防水</strong>，通勤運動皆適合</div>
-                                <div>多工連線 | <strong>支援雙裝置連線 (Multipoint)</strong></div>
-                                <div>配戴重量 | <strong>單耳重量 5.5 g</strong>，7 mm TrueResponse 動圈單體</div>
-                                <div>快速充電 | Type-C 快充10分鐘可用1小時 (資料未列無線充電)</div>
-                            </div>
-                        </div>
-
-                        <div class="sticky bottom-0 z-40 bg-white border-t border-gray-200 px-2 pt-1.5 pb-2 shadow-lg">
-                            <div class="flex items-center gap-1.5">
-                                <button class="flex-1 bg-momo-blue text-white font-bold py-2.5 rounded-md text-xs">加入購物車</button>
-                                <button class="flex-1 bg-momo-pink text-white font-bold py-2.5 rounded-md text-xs">直接購買</button>
-                            </div>
-                        </div>
-                    </div>
-                `
+                url: "www.momoshop.com.tw > goods > guava-go-pods3",
+                title: "【熱銷高CP】Guava Go Pods3 全天候混合主動降噪真無線耳機 - momo購物網",
+                snippet: "參考售價 NT$5,990！具備 IP54 防塵防潑水與跨設備多點連線，開啟 ANC 單次續航約 8 小時，搭載 7mm TrueResponse 動圈...",
+                keywords: ["guava", "go", "pods3", "pods", "model", "03", "a03", "耳機", "價格", "購物", "防水", "防塵", "ip54", "雙裝置", "多點連線", "續航", "划算", "momo", "藍牙耳機", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "momo", badgeText: "新品🔥", themeColor: "#d61f69", code: "G3",
+                    brandName: "Guava Go Pods3", mainImg: "A03_黑.png", thumbs: ["A03_黑.png", "A03_白.png", "A03_藍.png"], colors: "黑、白、藍",
+                    slogan: "CP值再升級！想把錢花在常用功能，這副值得先看", sku: "9399603",
+                    fullTitle: "Guava Go Pods3 全天候混合主動降噪真無線藍牙耳機 (IP54防塵防水 / 支援多點連線 / ANC續航約8h)",
+                    price: "5,990", origPrice: "7,490", sales: "3萬", rating: "4.8", reviewsCount: "2,509",
+                    ancOn: "約 8 小時", ancOff: "11 小時", caseBat: "最高 28 小時 (未列ANC條件)", caseShort: "28H",
+                    ip: "IP54 (具防塵與防潑水等級，符合 ≥IP54 需求)", ipWarn: false,
+                    mp: "支援(多點連線)", mpWarn: false,
+                    weight: "5.5 g", driver: "7 mm TrueResponse 動圈單體", ancSpec: "Hybrid ANC 混合式主動降噪",
+                    bt: "Bluetooth 5.3", codec: "aptX、AAC、SBC、LC3", charge: "Type-C 快充 10 分鐘可用 1 小時 (資料未列無線充電)",
+                    review1: "讚的！連筆電跟手機雙裝置切換超順，週末去慢跑流汗 IP54 防塵防水也很穩。",
+                    review2: "好用 操作直覺 開降噪單次可以聽約 8 小時，而且只要 $5,990 價格超划算，難怪評價這麼高！"
+                })
             },
 
-            // 6. Model 04 (蝦皮商城 - 綁定 A04_黑 / 藍 / 銀 / 紫)
+            // [目標耳機 4/6] JKT Live Beat 3 (原 Model 04)
             {
                 id: "shop_model_04",
                 icon: "🟠",
                 sitename: "蝦皮商城 Shopee",
-                url: "shopee.tw > product > tws-model-04",
-                title: "【觸控螢幕充電盒】Model 04 (A04) 智慧自適應降噪耳機 | ANC 開啟約 9h 超長續航・IP55",
-                snippet: "官方定價 NT$7,490。超炫彩色觸控螢幕充電盒！支援 LDAC 高音質、IP55 防塵防潑水，開啟 ANC 單次續航約 9 小時...",
-                keywords: ["model", "04", "a04", "耳機", "價格", "購物", "防水", "防塵", "ip55", "雙裝置", "續航", "觸控", "蝦皮", "藍牙耳機"],
-                content: `
-                    <div class="mobile-frame text-slate-800 pb-0">
-                        <div class="sticky top-0 bg-white z-40 flex items-center px-3 py-2.5 gap-3 border-b border-gray-200">
-                            <span class="text-orange-600 text-xl font-bold cursor-pointer" onclick="closeDocumentModal()">&larr;</span>
-                            <div class="flex-1 bg-gray-100 rounded flex items-center px-3 py-1.5 text-gray-500 text-xs">
-                                🔍 Model 04 觸控無線耳機
-                            </div>
-                            <div class="flex gap-3 items-center text-orange-600 text-sm font-bold">
-                                <span>🛒</span>
-                            </div>
-                        </div>
-
-                        <div class="w-full bg-white relative aspect-square flex flex-col items-center justify-center border-b p-6">
-                            <img src="A04_紫.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A04_紫.png';}" alt="Model 04" class="w-44 h-44 object-contain mb-2">
-                            <div class="flex gap-1.5 my-1">
-                                <img src="A04_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A04_黑.png';}" class="w-9 h-9 object-contain border rounded bg-white p-0.5" title="黑">
-                                <img src="A04_藍.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A04_藍.png';}" class="w-9 h-9 object-contain border rounded bg-white p-0.5" title="藍">
-                                <img src="A04_銀.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A04_銀.png';}" class="w-9 h-9 object-contain border rounded bg-white p-0.5" title="銀">
-                                <img src="A04_紫.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A04_紫.png';}" class="w-9 h-9 object-contain border rounded bg-white p-0.5" title="紫">
-                            </div>
-                            <div class="font-bold text-slate-700 text-sm mt-1">Model 04 彩色觸控螢幕充電盒</div>
-                            <div class="text-xs text-slate-400">可選配色：黑、藍、銀、紫</div>
-                        </div>
-
-                        <div class="bg-white p-3.5 mb-2">
-                            <div class="flex items-baseline justify-between mb-1.5">
-                                <div class="text-red-600 text-2xl font-bold">$7,490</div>
-                                <span class="text-xs text-gray-500">已售出 2.4萬</span>
-                            </div>
-                            <h1 class="text-sm font-bold text-gray-800 leading-snug">
-                                <span class="bg-red-600 text-white text-[10px] px-1 py-0.5 rounded-sm mr-1">蝦皮商城</span>
-                                Model 04 (A04) 智慧觸控螢幕充電盒真無線降噪耳機 | ANC 開啟約 9h 續航・IP55 防塵防水
-                            </h1>
-                        </div>
-
-                        <div class="bg-white p-3.5 mb-2">
-                            <h3 class="text-xs font-bold mb-3 border-b border-gray-100 pb-2 text-slate-900">商品規格詳情</h3>
-                            <div class="text-xs text-gray-700 space-y-2.5">
-                                <div class="flex"><span class="w-28 text-gray-400 shrink-0">品牌 / 型號</span><span class="font-bold">Model 04 (編號 A04)</span></div>
-                                <div class="flex"><span class="w-28 text-gray-400 shrink-0">官方定價</span><span class="font-bold text-red-600">NT$ 7,490</span></div>
-                                <div class="flex"><span class="w-28 text-gray-400 shrink-0">防水防塵等級</span><span class="font-bold text-emerald-700">IP55</span></div>
-                                <div class="flex"><span class="w-28 text-gray-400 shrink-0">雙裝置連線</span><span class="text-red-600 font-bold">不支援(僅單設備配對記憶)</span></div>
-                                <div class="flex"><span class="w-28 text-gray-400 shrink-0">單次續航</span><span class="font-bold">約9h (ANC開啟) / 12 h (ANC關閉) / 最高36小時 (搭充電盒)</span></div>
-                                <div class="flex"><span class="w-28 text-gray-400 shrink-0">單耳重量</span><span>5.0 g</span></div>
-                            </div>
-                            <div class="text-xs text-gray-600 leading-relaxed mt-4">
-                                <p class="text-red-600 bg-red-50 p-2 rounded">※ 注意：本款 Model 04 <strong>不支援跨設備雙裝置同時連線（Multipoint）</strong>，切換電腦與手機時需手動斷開重連。</p>
-                            </div>
-                        </div>
-
-                        <div class="sticky bottom-0 w-full bg-white border-t border-gray-200 flex text-xs text-center z-40">
-                            <div class="flex-1 py-2.5 border-r border-gray-100 text-teal-600 font-medium cursor-pointer">💬 聊聊</div>
-                            <div class="flex-1 py-2.5 text-teal-700 bg-teal-50 font-medium cursor-pointer">🛒 加入購物車</div>
-                            <div class="flex-1 bg-orange-600 text-white py-2.5 font-bold cursor-pointer">直接購買 $7,490</div>
-                        </div>
-                    </div>
-                `
+                url: "shopee.tw > product > jkt-live-beat-3",
+                title: "【觸控螢幕充電盒】JKT Live Beat 3 智慧自適應降噪耳機 | ANC 開啟約 9h 超長續航・IP55",
+                snippet: "參考售價 NT$7,490。充電盒配有觸控彩色螢幕！支援 LDAC、Qi 無線充電與 IP55 防護，ANC 開啟約 9 小時（不支援多點連線）...",
+                keywords: ["jkt", "live", "beat", "model", "04", "a04", "耳機", "價格", "購物", "防水", "防塵", "ip55", "雙裝置", "多點連線", "續航", "觸控", "蝦皮", "藍牙耳機", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "蝦皮商城", badgeText: "商城🔥", themeColor: "#ea580c", code: "JKT",
+                    brandName: "JKT Live Beat 3", mainImg: "A04_紫.png", thumbs: ["A04_黑.png", "A04_藍.png", "A04_銀.png", "A04_紫.png"], colors: "黑、藍、銀、紫",
+                    slogan: "充電盒配有觸控彩色螢幕！ANC 開啟約 9 小時長續航", sku: "9399604",
+                    fullTitle: "JKT Live Beat 3 智慧觸控彩色螢幕充電盒真無線降噪耳機 (ANC開啟約9h / IP55防塵防水 / LDAC)",
+                    price: "7,490", origPrice: "8,490", sales: "2.4萬", rating: "4.9", reviewsCount: "1,850",
+                    ancOn: "約 9 小時", ancOff: "12 小時", caseBat: "最高 36 小時 (觸控彩色螢幕充電盒)", caseShort: "36H",
+                    ip: "IP55 (具防塵與防低壓水柱等級)", ipWarn: false,
+                    mp: "不支援多點連線 (僅單設備配對記憶，無法同時連兩台裝置)", mpWarn: true,
+                    weight: "5.0 g", driver: "10mm 動圈單體", ancSpec: "True Adaptive ANC 智慧自適應降噪",
+                    bt: "Bluetooth 5.3", codec: "LDAC、AAC、SBC", charge: "Qi 無線充電；快充 15 分鐘可用 4 小時",
+                    review1: "充電盒有觸控螢幕超酷！開降噪可以聽 9 小時，IP55 防護也很夠。",
+                    review2: "注意這款不支援多點連線喔！如果要同時連電腦跟手機切換的人不能買這款，要手動斷開重連。"
+                })
             },
 
-            // 7. Model 05 (Yaho! 奇摩購物中心 - 綁定 A05_透明黑.png)
+            // [目標耳機 5/6] Naiwa Buds Pro Wi-Fi (原 Model 05)
             {
                 id: "shop_model_05",
                 icon: "🟣",
                 sitename: "Yaho! 奇摩購物中心",
-                url: "buy.yaho.com.tw > item > tws-model-05",
-                title: "【三單體怪獸】Model 05 (A05) 55dB 旗艦降噪藍牙耳機 | ANC 約 10h 續航霸主",
+                url: "buy.yaho.com.tw > item > naiwa-buds-pro-wifi",
+                title: "【三單體怪獸】Naiwa Buds Pro Wi-Fi 55dB 旗艦降噪藍牙耳機 | ANC 約 10h 續航霸主",
                 snippet: "官方定價 NT$6,499。豪華三單體架構、最高 55dB 主動降噪，開啟 ANC 單次續航約 10 小時！支援智慧雙設備切換與 IPX4 生活防潑水...",
-                keywords: ["model", "05", "a05", "耳機", "價格", "購物", "防水", "ipx4", "雙裝置", "續航", "藍牙耳機"],
-                content: `
-                    <div class="bg-slate-100 min-h-full text-slate-800">
-                        <div class="bg-yaho-purple text-white px-4 sm:px-8 py-3 flex items-center justify-between shadow">
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl font-black tracking-tight">Yaho!</span>
-                                <span class="text-sm font-bold bg-amber-400 text-slate-900 px-2 py-0.5 rounded">購物中心</span>
-                            </div>
-                            <div class="text-xs">3C 旗艦館 | 購物車 (0)</div>
-                        </div>
-                        <div class="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 grid grid-cols-1 md:grid-cols-12 gap-8">
-                                <div class="md:col-span-5">
-                                    <div class="bg-slate-900 text-white rounded-xl aspect-square flex flex-col items-center justify-center p-6 relative">
-                                        <span class="absolute top-3 left-3 bg-amber-400 text-slate-900 text-xs font-extrabold px-2.5 py-0.5 rounded">ANC 約10h 續航王</span>
-                                        <img src="A05_透明黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A05_透明黑.png';}" alt="Model 05" class="w-48 h-48 object-contain mb-2 bg-white rounded-lg p-2">
-                                        <div class="font-extrabold text-lg mt-1">Model 05 (A05)</div>
-                                        <div class="text-xs text-amber-300">配色：透明黑</div>
-                                    </div>
-                                </div>
-                                <div class="md:col-span-7 flex flex-col justify-between">
-                                    <div>
-                                        <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-3">
-                                            【三單體怪獸】Model 05 (A05) 55dB 旗艦降噪真無線藍牙耳機 | 開啟 ANC 單次約 10 小時超長續航
-                                        </h1>
-                                        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
-                                            <span class="text-xs text-slate-500">官方參考定價</span>
-                                            <div class="text-3xl font-black text-red-600 mt-0.5">NT$ 6,499</div>
-                                        </div>
-                                        <div class="bg-slate-50 rounded-lg p-3.5 text-xs space-y-2 border">
-                                            <div>🔹 <strong>單次續航：</strong> 開啟 ANC <strong>約 10 h</strong>（ANC關閉 14 h / 充電盒最高 38 小時）</div>
-                                            <div>🔹 <strong>多點連線：</strong> <strong>支援(智慧雙設備切換)</strong></div>
-                                            <div>🔹 <strong>單耳重量：</strong> <strong>5.1 g</strong></div>
-                                            <div class="text-red-600 font-bold">⚠️ <strong>防水防塵等級：IPX4(僅生活防潑水,無防塵等級)（未達 IP54 標準）</strong></div>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-3 mt-5">
-                                        <button class="flex-1 bg-amber-500 text-white font-bold py-3 rounded-xl text-sm">加入購物車</button>
-                                        <button class="flex-1 bg-yaho-purple text-white font-bold py-3 rounded-xl text-sm">立即購買</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `
+                keywords: ["naiwa", "buds", "wifi", "wi-fi", "model", "05", "a05", "耳機", "價格", "購物", "防水", "ipx4", "雙裝置", "多點連線", "續航", "藍牙耳機", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "Yaho!購物", badgeText: "續航王⚡", themeColor: "#5b189a", code: "NW",
+                    brandName: "Naiwa Buds Pro Wi-Fi", mainImg: "A05_透明黑.png", thumbs: ["A05_透明黑.png"], colors: "透明黑",
+                    slogan: "今天行程很滿歌單也想跟上！ANC 開啟約 10 小時超長續航", sku: "9399605",
+                    fullTitle: "【三單體怪獸】Naiwa Buds Pro Wi-Fi 55dB 旗艦主動降噪藍牙耳機 (ANC單次約10h / 雙設備切換)",
+                    price: "6,499", origPrice: "7,290", sales: "1.9萬", rating: "4.7", reviewsCount: "1,310",
+                    ancOn: "約 10 小時", ancOff: "14 小時", caseBat: "最高 38 小時", caseShort: "38H",
+                    ip: "IPX4 (僅生活防潑水，無防塵等級，不符合 IP54 以上防塵防潑水條件)", ipWarn: true,
+                    mp: "支援(智慧雙設備切換)", mpWarn: false,
+                    weight: "5.1 g", driver: "三單體(11mm雙磁+微平板+陶瓷高音)", ancSpec: "最高 55 dB 旗艦主動降噪",
+                    bt: "Bluetooth 5.2", codec: "LHDC 5.0、LC3、AAC、SBC", charge: "Qi 無線充電；快充 10 分鐘可用 3 小時",
+                    review1: "開降噪單次可以聽 10 小時真的超持久！透明黑外型也很帥。",
+                    review2: "唯一可惜的是防護只有 IPX4 沒有防塵認證，如果週末常去戶外慢跑有沙塵需求的人要留意不符 IP54 標準。"
+                })
             },
 
-            // 8. Model 06 (SoundBuy 音響專賣網 - 綁定 A06_黑.png / A06_白.png)
+            // [目標耳機 6/6] Tikkak-Audio X5 (原 Model 06)
             {
                 id: "shop_model_06",
                 icon: "🎵",
                 sitename: "SoundBuy 日本音響專賣",
-                url: "www.soundbuy.com.tw > product > tws-model-06",
-                title: "Model 06 (A06) 日系高解析動圈降噪真無線耳機 | UV 殺菌充電盒・職人調音",
+                url: "www.soundbuy.com.tw > product > tikkak-audio-x5",
+                title: "Tikkak-Audio X5 日系高解析動圈降噪真無線耳機 | 深紫外線殺菌充電盒・職人調音",
                 snippet: "官方定價 NT$7,980。搭載 5.8mm Pure Motion 高解析動圈、數位複合主動降噪、支援多點連接，充電盒內建深紫外線殺菌功能...",
-                keywords: ["model", "06", "a06", "耳機", "價格", "購物", "ipx4", "雙裝置", "日系", "藍牙耳機"],
-                content: `
-                    <div class="bg-neutral-900 min-h-full">
-                        <div class="bg-gold-btn text-xs font-extrabold py-2 px-4 text-center sticky top-0 z-40 shadow">
-                            🇯🇵 日本東京職人監製 | 限量空運抵台 · 免註冊一頁式快速下單！
-                        </div>
-                        <div class="max-w-3xl mx-auto px-6 py-10 text-center border-b border-neutral-800">
-                            <span class="text-amber-400 text-xs tracking-widest border border-amber-500 px-3 py-1 rounded-full inline-block">Pure Motion Hi-Res Audio</span>
-                            <h1 class="text-3xl font-black mt-4 mb-3 text-white">Model 06 <span class="text-amber-400">(A06)</span> 日系極致動圈降噪耳機</h1>
-                            <div class="my-6 bg-neutral-800 border border-amber-500 rounded-2xl p-6 max-w-md mx-auto shadow-2xl">
-                                <div class="flex justify-center gap-4 mb-3">
-                                    <img src="A06_黑.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A06_黑.png';}" alt="Model 06 黑" class="w-36 h-36 object-contain bg-white rounded-xl p-2">
-                                    <img src="A06_白.png" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/A06_白.png';}" alt="Model 06 白" class="w-36 h-36 object-contain bg-white rounded-xl p-2">
-                                </div>
-                                <div class="text-xs text-amber-300 mb-1">日本官方進口定價（配色：黑、白）</div>
-                                <div class="text-4xl font-black text-red-400 mb-2">NT$ 7,980</div>
-                                <div class="text-xs text-red-300 border border-red-500 rounded px-2.5 py-1 inline-block">
-                                    ⚠️ 注意：售價 NT$7,980 已超過 NT$7,500 預算上限
-                                </div>
-                            </div>
-                            <table class="text-xs sm:text-sm text-neutral-200 max-w-xl mx-auto mt-6">
-                                <tr><th class="bg-neutral-800 text-amber-300 border-neutral-700 w-2/5">產品型號</th><td class="border-neutral-700 font-bold">Model 06 (編號 A06)</td></tr>
-                                <tr><th class="bg-neutral-800 text-amber-300 border-neutral-700">官方參考定價</th><td class="border-neutral-700 text-red-400 font-bold">NT$ 7,980（超出預算 ❌）</td></tr>
-                                <tr><th class="bg-neutral-800 text-amber-300 border-neutral-700">防水防塵等級</th><td class="border-neutral-700 text-red-400 font-bold">IPX4(僅生活防潑水)（無防塵認證 ❌）</td></tr>
-                                <tr><th class="bg-neutral-800 text-amber-300 border-neutral-700">雙裝置多點連線</th><td class="border-neutral-700 text-emerald-400 font-bold">支援(多點連接)</td></tr>
-                                <tr><th class="bg-neutral-800 text-amber-300 border-neutral-700">單次續航 (ANC開)</th><td class="border-neutral-700">6 h（ANC關閉 7.5 h / 搭充電盒最高 18.5 小時）</td></tr>
-                                <tr><th class="bg-neutral-800 text-amber-300 border-neutral-700">單耳重量</th><td class="border-neutral-700">5.4 g</td></tr>
-                            </table>
-                        </div>
-                    </div>
-                `
+                keywords: ["tikkak", "audio", "x5", "model", "06", "a06", "耳機", "價格", "購物", "ipx4", "雙裝置", "多點連線", "日系", "殺菌", "藍牙耳機", "無線耳機"],
+                content: buildRichStorePage({
+                    platformShort: "SoundBuy", badgeText: "日本空運🇯🇵", themeColor: "#b45309", code: "X5",
+                    brandName: "Tikkak-Audio X5", mainImg: "A06_黑.png", thumbs: ["A06_黑.png", "A06_白.png"], colors: "黑、白",
+                    slogan: "把焦點放在編碼支援與充電盒深紫外線殺菌功能", sku: "9399606",
+                    fullTitle: "Tikkak-Audio X5 日系高解析動圈主動降噪真無線耳機 (UV殺菌充電盒 / Snapdragon Sound)",
+                    price: "7,980", origPrice: "8,980", sales: "6,200", rating: "4.7", reviewsCount: "520",
+                    ancOn: "6 小時", ancOff: "7.5 小時", caseBat: "最高 18.5 小時 (深紫外線殺菌充電盒)", caseShort: "18.5H",
+                    ip: "IPX4 (僅生活防潑水，未列防塵等級，且售價 $7,980 超出 $7,500 預算)", ipWarn: true,
+                    mp: "支援(多點連接)", mpWarn: false,
+                    weight: "5.4 g", driver: "5.8 mm Pure Motion 高解析動圈", ancSpec: "數位複合主動降噪",
+                    bt: "Bluetooth 5.4", codec: "Snapdragon Sound、aptX Adaptive、AAC、SBC", charge: "Qi 無線充電、Type-C 有線充電 (資料未列快充時間)",
+                    review1: "充電盒有 UV 紫外線殺菌功能很特別，aptX Adaptive 音質表現細膩。",
+                    review2: "價格 NT$7,980 已經超過 7,500 元預算了，而且只有 IPX4 沒有防塵等級，開 ANC 續航也只有 6 小時。"
+                })
             },
 
-            // 9. 部落格評測 1：運動客 3C 評測部落格
+            // [部落格 1/2] New超狂懶人包，4種耳機推薦的耳機一次看完，根本佛心淚灑~
             {
                 id: "blog_outdoor_ip_test",
                 icon: "📝",
-                sitename: "運動客 3C 評測誌 RunnerTech",
-                url: "runner-tech.blog > 2026 > tws-ip-rating-guide",
-                title: "【2026運動耳機指南】買慢跑耳機千萬別看錯！IP54 與 IPX4 差在哪？Model 01~06 防護力總整理",
-                snippet: "戶外慢跑最怕流汗跟突發小雨！你知道 IPX4 的『X』代表完全沒有防塵認證嗎？本文完整實測 Model 01 ~ Model 06 的防塵防水等級與價格...",
-                keywords: ["部落格", "評測", "推薦", "運動", "慢跑", "防水", "防塵", "ip54", "ipx4", "ip57", "ip55", "耳機", "比較", "藍牙耳機"],
-                content: `
-                    <div class="bg-slate-50 min-h-full text-slate-800 py-8 px-4">
-                        <article class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-10">
-                            <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full">運動穿戴專欄</span>
-                            <h1 class="text-2xl font-extrabold text-slate-900 mt-2 mb-4">買慢跑耳機千萬別看錯！IP54 與 IPX4 差在哪？六款熱門耳機防護力實測</h1>
-                            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl my-4 text-xs leading-relaxed">
-                                💡 <strong>IP54（或 IP55 / IP57）</strong>具備 5 級防塵與 4 級以上防水；而 <strong>IPX4</strong> 的「X」代表<strong>完全沒有防塵認證</strong>！若硬性條件要求「需達 IP54 等級或以上」，僅有 IPX4 的耳機直接淘汰！
-                            </div>
-                            <table class="text-xs sm:text-sm my-4">
-                                <thead>
-                                    <tr class="bg-slate-100"><th>耳機型號</th><th>官方售價</th><th>防塵防水等級</th><th>是否符合「&ge; IP54」</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td class="font-bold">Model 01 (A01)</td><td>NT$ 7,490</td><td class="font-bold text-emerald-700">IP57</td><td class="text-emerald-700 font-bold">✅ 符合</td></tr>
-                                    <tr><td class="font-bold">Model 02 (A02)</td><td>NT$ 7,490</td><td class="font-bold text-emerald-700">IP54</td><td class="text-emerald-700 font-bold">✅ 符合</td></tr>
-                                    <tr class="bg-emerald-50"><td class="font-bold">Model 03 (A03)</td><td class="font-bold text-pink-600">NT$ 5,990</td><td class="font-bold text-emerald-700">IP54</td><td class="text-emerald-700 font-bold">✅ 符合</td></tr>
-                                    <tr><td class="font-bold">Model 04 (A04)</td><td>NT$ 7,490</td><td class="font-bold text-emerald-700">IP55</td><td class="text-emerald-700 font-bold">✅ 符合（但無雙裝置）</td></tr>
-                                    <tr class="bg-red-50"><td class="font-bold">Model 05 (A05)</td><td>NT$ 6,499</td><td class="font-bold text-red-600">IPX4</td><td class="text-red-600 font-bold">❌ 淘汰（無防塵）</td></tr>
-                                    <tr class="bg-red-50"><td class="font-bold">Model 06 (A06)</td><td class="text-red-600">NT$ 7,980</td><td class="font-bold text-red-600">IPX4</td><td class="text-red-600 font-bold">❌ 淘汰（無防塵且超預算）</td></tr>
-                                </tbody>
-                            </table>
-                        </article>
-                    </div>
-                `
+                sitename: "耳機選購指南 | 無線耳機推薦 / 懶人包",
+                url: "earphone-guide.blog > 2026 > 4-tws-lazy-pack",
+                title: "New超狂懶人包，4種耳機推薦的耳機一次看完，根本佛心淚灑~",
+                snippet: "選購推薦｜更新：2026.10.23。這篇直接把四款無線耳機 Sooglur Pixel Buds Pro 4、Guava Go Pods3、JKT Live Beat 3、Tikkak-Audio X5 的重點攤開來看！從規格、IP 防護等級到常見問題一次整理...",
+                keywords: ["部落格", "評測", "推薦", "懶人包", "選購指南", "無線耳機", "藍牙耳機", "耳機", "sooglur", "guava", "jkt", "tikkak", "防水", "防塵", "ip54", "ip55", "ipx4", "多點連線", "雙裝置", "價格", "比較"],
+                content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-slate-900 text-white px-6 py-3.5 flex justify-between items-center text-xs font-bold"><span>耳機選購指南</span><span class="text-slate-400">無線耳機推薦 / 懶人包</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-3"><div class="text-xs text-slate-400">首頁 &rsaquo; 選購指南 &rsaquo; 無線耳機推薦</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">New超狂懶人包，4種耳機推薦的耳機一次看完，根本佛心淚灑~</h1><div class="text-xs text-slate-400 pb-2 border-b">選購推薦 ｜ 更新：2026.10.23</div><p class="text-sm text-slate-700 leading-relaxed">耳機一搜下去，每款都在喊降噪、長續航、高音質，看到最後只剩一個問題：所以我到底該買哪一副？這篇直接把四款無線耳機的重點攤開來看！</p><h2 class="text-lg font-extrabold text-slate-900">精選速覽：先找出你的那一款</h2><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>型號 / 參考售價</th><th>推薦族群</th><th>推薦原因</th></tr></thead><tbody><tr><td><strong class="text-sky-700">Sooglur Pixel Buds Pro 4</strong><br>NT$7,490</td><td>通勤、工作切換</td><td>單耳 4.7g、多點連線，兼顧日常便利</td></tr><tr><td><strong class="text-sky-700">Guava Go Pods3</strong><br>NT$5,990</td><td>預算有限、多裝置使用</td><td>四款中價格較低，仍有 ANC、多點連線與 IP54</td></tr><tr><td><strong class="text-sky-700">JKT Live Beat 3</strong><br>NT$7,490</td><td>偏好長續航、特色充電盒</td><td>觸控彩色螢幕充電盒，ANC 開啟約 9 小時</td></tr><tr><td><strong class="text-sky-700">Tikkak-Audio X5</strong><br>NT$7,980</td><td>在意編碼、充電盒功能</td><td>aptX Adaptive、多點連線，充電盒具深紫外線殺菌功能</td></tr></tbody></table></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">01 / 輕巧通勤派</div><h2 class="text-xl font-black">Sooglur Pixel Buds Pro 4 — 手機、電腦都要顧到，耳朵也想少點負擔</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A02_米.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">米</div></div><div>${imgTag('A02_綠.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">綠</div></div><div>${imgTag('A02_灰.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">灰</div></div><div>${imgTag('A02_粉.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">粉</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜4.7g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>音訊編碼</strong>｜AAC、SBC、Opus</div><div><strong>單體</strong>｜11mm 訂製動圈</div><div><strong>降噪</strong>｜Silent Seal 2.0 ANC</div><div><strong>單次續航</strong>｜ANC 開 8 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 30 小時（未列 ANC 條件）</div><div><strong>充電</strong>｜Qi 無線充電</div><div><strong>快充</strong>｜5 分鐘用 1.5 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ 單耳 4.7g 較輕；+ 支援多點連線與 Qi 無線充電。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 無 LDAC 或 aptX；− IP54 防塵防潑水但不能游泳。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">02 / 預算務實派</div><h2 class="text-xl font-black">Guava Go Pods3 — 想把錢花在常用功能，這副值得先看</h2><div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A03_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A03_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div><div>${imgTag('A03_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$5,990</div><div><strong>單耳重量</strong>｜5.5g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.3，支援多點連線</div><div><strong>音訊編碼</strong>｜aptX、AAC、SBC、LC3</div><div><strong>單體</strong>｜7mm TrueResponse 動圈</div><div><strong>降噪</strong>｜Hybrid ANC 混合式主動降噪</div><div><strong>單次續航</strong>｜ANC 開約 8 小時／關 11 小時</div><div><strong>含盒續航</strong>｜最高 28 小時</div><div><strong>充電</strong>｜Type-C</div><div><strong>快充</strong>｜10 分鐘用 1 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ NT$5,990 好入手；+ 多點連線、ANC 與 IP54 都有列入規格。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 單耳 5.5g 是四款中較重的一款。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">03 / 功能控看這裡</div><h2 class="text-xl font-black">JKT Live Beat 3 — 充電盒有螢幕，續航數字也很有看頭</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A04_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A04_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div><div>${imgTag('A04_銀.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">銀</div></div><div>${imgTag('A04_紫.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">紫</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜5.0g；<strong>防護</strong>｜IP55</div><div><strong>連線</strong>｜Bluetooth 5.3，<span class="text-red-600 font-bold">不支援多點連線</span></div><div><strong>音訊編碼</strong>｜LDAC、AAC、SBC</div><div><strong>單次續航</strong>｜ANC 開約 9 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 36 小時（觸控彩色螢幕盒）</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：不支援多點連線，每天在手機和筆電之間切換的人要留意！</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">04 / 特色配備派</div><h2 class="text-xl font-black">Tikkak-Audio X5 — 把焦點放在編碼支援與充電盒設計</h2><div class="grid grid-cols-2 gap-2 text-center bg-slate-50 p-3 rounded-xl max-w-md mx-auto"><div>${imgTag('A06_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A06_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜<span class="text-red-600 font-bold">NT$7,980</span></div><div><strong>單耳重量</strong>｜5.4g；<strong>防護</strong>｜<span class="text-red-600 font-bold">IPX4</span></div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>單次續航</strong>｜ANC 開 6 小時／關 7.5 小時</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：ANC 開啟 6 小時；IPX4 未列防塵等級；售價 NT$7,980 也是四款中較高。</div></section><hr><section class="space-y-2 text-xs"><h2 class="text-base font-black">05 / IP 防塵防水解讀 & 常見問題 FAQ</h2><p>IP 後第一個位置看固體異物防護（防塵），第二個看進水防護（防水）；<strong>X 代表沒有列出該項等級</strong>：</p><table class="text-xs"><thead><tr class="bg-slate-100"><th>等級與本篇產品</th><th>重點解讀</th></tr></thead><tbody><tr><td class="font-bold text-emerald-700">IP54｜Sooglur、Guava</td><td>具防塵與防潑水等級。</td></tr><tr><td class="font-bold text-emerald-700">IP55｜JKT</td><td>具防塵與水柱測試等級（但 JKT 不支援多點連線）。</td></tr><tr><td class="font-bold text-red-600">IPX4｜Tikkak-Audio</td><td>列有防潑水等級；<strong>沒有列出防塵等級</strong>。</td></tr></tbody></table></section></article></div>`
             },
 
-            // 10. 部落格評測 2：數位工作術 DigitalWork
+            // [部落格 2/2] 五款無線耳機續航評比與選購推薦
             {
                 id: "blog_office_multipoint",
                 icon: "💻",
-                sitename: "數位工作術 DigitalWork",
-                url: "digitalwork.tw > 2026 > tws-multipoint-and-battery",
-                title: "筆電手機雙棲必備！「跨設備雙裝置連線」與「ANC 單次續航力」六款耳機殘酷實測",
-                snippet: "上班用筆電開會聽歌，手機響了能不能直接接？實測發現 Model 04 居然不支援雙裝置連線！同場加映開啟 ANC 單次續航力與價格划算度決策指南...",
-                keywords: ["部落格", "評測", "推薦", "上班", "通勤", "雙裝置", "多點連線", "續航", "電力", "anc", "降噪", "耳機", "重量", "划算", "藍牙耳機"],
-                content: `
-                    <div class="bg-slate-50 min-h-full text-slate-800 py-8 px-4">
-                        <article class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-10">
-                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">職場生產力評測</span>
-                            <h1 class="text-2xl font-extrabold text-slate-900 mt-2 mb-4">筆電手機雙棲必備！「雙裝置連線」與「ANC 單次續航力」殘酷實測排行</h1>
-                            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl my-4 text-xs text-red-800">
-                                ⚠️ <strong>實測避雷針：Model 04 (A04) 完全不支援雙裝置同時連線！</strong>需要同時連電腦與手機的上班族請先將 Model 04 淘汰。
-                            </div>
-                            <table class="text-xs sm:text-sm my-4">
-                                <thead>
-                                    <tr class="bg-slate-100"><th>型號</th><th>官方價格</th><th>防護等級</th><th>雙裝置連線</th><th>ANC 單次續航</th><th>單耳重量</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td class="font-bold">Model 01 (A01)</td><td>NT$ 7,490</td><td>IP57 ✅</td><td>支援 ✅</td><td>約 6h</td><td>5.4 g</td></tr>
-                                    <tr><td class="font-bold">Model 02 (A02)</td><td>NT$ 7,490</td><td>IP54 ✅</td><td>支援 ✅</td><td class="font-bold text-blue-700">8 h</td><td>4.7 g</td></tr>
-                                    <tr class="bg-emerald-50 font-medium"><td class="font-bold text-emerald-900">Model 03 (A03)</td><td class="font-bold text-pink-600">NT$ 5,990</td><td>IP54 ✅</td><td>支援 ✅</td><td class="font-bold text-blue-700">約 8h</td><td>5.5 g</td></tr>
-                                    <tr class="bg-red-50 text-slate-500"><td class="font-bold">Model 04 (A04)</td><td>NT$ 7,490</td><td>IP55 ✅</td><td class="text-red-600 font-bold">不支援 ❌</td><td>約 9h</td><td>5.0 g</td></tr>
-                                    <tr class="bg-red-50 text-slate-500"><td class="font-bold">Model 05 (A05)</td><td>NT$ 6,499</td><td class="text-red-600 font-bold">IPX4 ❌</td><td>支援 ✅</td><td>約 10 h</td><td>5.1 g</td></tr>
-                                    <tr class="bg-red-50 text-slate-500"><td class="font-bold">Model 06 (A06)</td><td class="text-red-600 font-bold">NT$ 7,980 ❌</td><td class="text-red-600 font-bold">IPX4 ❌</td><td>支援 ✅</td><td>6 h</td><td>5.4 g</td></tr>
-                                </tbody>
-                            </table>
-                        </article>
-                    </div>
-                `
+                sitename: "BLOG 挑選指南 | 3C 續航實測誌",
+                url: "tech-blog.tw > 2026 > 5-tws-battery-review",
+                title: "五款無線耳機續航評比與選購推薦：別讓耳機比你先下班！通勤與長時間外出的選購指南",
+                snippet: "21/10 2026 挑選指南。這次讓 Tecnick EAH-AZ100、H20 Neonlite 2、Soli WF-1000XM5、Naiwa Buds Pro Wi-Fi、Guava Go Pods3 一起登場，比較單次播放、充電盒補電與快充...",
+                keywords: ["部落格", "評測", "推薦", "續航", "電力", "快充", "anc", "降噪", "耳機", "比較", "藍牙耳機", "無線耳機", "tecnick", "h20", "soli", "naiwa", "guava"],
+                content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-white border-b px-6 py-3 flex justify-between text-xs text-slate-500 font-bold"><span>MENU</span><span>HOME &gt; BLOG &gt; BACK</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-2"><div class="text-xs font-bold text-slate-500">21/10 挑選指南 2026.</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">五款無線耳機續航評比與選購推薦</h1><div class="text-sm font-bold text-sky-700">別讓耳機比你先下班 通勤與長時間外出的選購指南</div><p class="text-xs sm:text-sm text-slate-700 leading-relaxed">這次讓 <strong>Tecnick EAH-AZ100、H20 Neonlite 2、Soli WF-1000XM5、Naiwa Buds Pro Wi-Fi、Guava Go Pods3</strong> 一起登場，比較單次播放、充電盒補電與快充。平常會開 ANC，就優先看降噪開啟的數字！</p></section><hr><section class="space-y-4 text-xs sm:text-sm"><div class="p-3 bg-slate-50 rounded-lg border"><strong>1. Tecnick EAH-AZ100：</strong>AAC 模式開啟 ANC 單次約 10 小時、關閉 ANC 約 12 小時；快充 15 分鐘可用約 90 分鐘。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>2. H20 Neonlite 2（通勤分段聽）：</strong>ANC 單次續航<strong>約 6 小時</strong>，關閉 ANC 約 7.5 小時；快充 10 分鐘可用 2.5 小時，含盒最高 26 小時。若常常「一戴就不想停」，應把單次續航放在更前面比較。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>3. Soli WF-1000XM5：</strong>AAC/SBC 開啟 ANC 最長 8 小時，關閉降噪最長 12 小時；快充 3 分鐘播 1 小時。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>4. Naiwa Buds Pro Wi-Fi：</strong>標示 ANC 開啟<strong>約 10 小時</strong>，關閉約 14 小時，含盒最高 38 小時。<br><span class="text-red-600 font-bold">⚠️ 規格觀察：它標示的 IPX4 並不符合 IP54 以上的防塵防潑水條件；若戶外需求包含防塵，仍得把防護規格一起看。</span></div><div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200"><strong>5. Guava Go Pods3（讓歌單多陪你一段路）：</strong>開啟 ANC <strong>約可聽 8 小時</strong>，關閉 ANC 約 11 小時，含盒最高 28 小時。相較 H20 Neonlite 2 多出約 2 小時的 ANC 單次續航，讓較長行程多些餘裕！</div></section><h3 class="text-base font-black text-sky-700 text-center pt-2">五款耳機續航比較表</h3><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>產品</th><th>ANC 開啟單次</th><th>ANC 關閉單次</th><th>快充標示</th></tr></thead><tbody><tr><td>Tecnick EAH-AZ100</td><td>約 10 小時</td><td>約 12 小時</td><td>至少 15 分鐘 &rarr; 約 90 分鐘</td></tr><tr><td class="font-bold">H20 Neonlite 2</td><td>約 6 小時</td><td>約 7.5 小時</td><td>10 分鐘 &rarr; 2.5 小時</td></tr><tr><td>Soli WF-1000XM5</td><td>最長 8 小時</td><td>最長 12 小時</td><td>3 分鐘 &rarr; 約 1 小時</td></tr><tr><td class="font-bold">Naiwa Buds Pro Wi-Fi</td><td>約 10 小時 (僅IPX4)</td><td>約 14 小時</td><td>10 分鐘 &rarr; 3 小時</td></tr><tr class="bg-emerald-50 font-bold"><td>Guava Go Pods3</td><td>約 8 小時</td><td>約 11 小時</td><td>10 分鐘 &rarr; 1 小時</td></tr></tbody></table></article></div>`
             }
         ];
 
         function enterSearchEngine() {
             document.getElementById('introScreen').classList.add('hidden');
             document.body.classList.remove('modal-open');
-            localStorage.setItem('task_start_time', Date.now());
-            localStorage.setItem('started_at', new Date().toISOString());
-            logEvent('task_start', 'enter_traditional_search');
-            document.getElementById('heroSearchInput').focus();
+            if (!hasTaskStarted) {
+                hasTaskStarted = true;
+                localStorage.setItem('task_start_time', Date.now());
+                localStorage.setItem('started_at', new Date().toISOString());
+                logEvent('task_start', 'enter_traditional_search');
+                document.getElementById('introConfirmBtn').innerHTML = '關閉說明，回到畫面繼續找 &rarr;';
+                document.getElementById('heroSearchInput').focus();
+            }
+        }
+
+        function reopenTaskModal() {
+            logEvent('reopen_task_instructions', 'top_left_button');
+            document.getElementById('introScreen').classList.remove('hidden');
+            document.body.classList.add('modal-open');
         }
 
         function triggerSearchFromHero() {
@@ -1027,12 +915,12 @@
             document.getElementById('choiceModal').classList.remove('flex');
         }
 
-        // 串接後端 finish-experiment (不劇透正確與否，暫不加入後測問卷)
         async function submitFinalChoice() {
             const selected = document.querySelector('input[name="finalProduct"]:checked');
             if (!selected) { alert('請先選擇一款耳機！'); return; }
 
             const choice = selected.value;
+            const brandName = selected.getAttribute('data-brand');
             const isCorrect = (choice === 'Model 03');
             const errorTypeMap = {
                 'Model 03': 'none_optimal',
@@ -1047,6 +935,7 @@
             const durationSec = Math.round((Date.now() - startTime) / 1000);
 
             await logEvent('submit_choice', choice, {
+                brand_name: brandName,
                 error_type: errorTypeMap[choice],
                 duration_sec: durationSec
             });
@@ -1071,7 +960,7 @@
                 });
             } catch (e) {}
 
-            alert(`🎉 實驗完成！感謝您的參與！\n您已提交最終選擇：${choice}`);
+            alert(`🎉 實驗完成！感謝您的參與！\n您已提交最終選擇：${brandName}`);
             closeFinalChoiceModal();
         }
 
