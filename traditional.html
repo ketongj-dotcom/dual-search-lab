@@ -960,8 +960,12 @@
                 });
             } catch (e) {}
 
-            alert(`🎉 實驗完成！感謝您的參與！\n您已提交最終選擇：${brandName}`);
+            const pId = localStorage.getItem('participant_id') || 'U000';
+            const prefilledSurveyUrl = `https://docs.google.com/forms/d/e/1FAIpQLSfVb52zLqIn0T8FsV5o1hyJ-VkydwJHgii41-N_wWDVblkHWQ/viewform?usp=pp_url&entry.330827761=${encodeURIComponent(pId)}`;
+
+            alert(`🎉 產品選擇已成功送出！\n\n接下來將自動為您跳轉至簡短的後測問卷（系統已自動帶入您的受試者編號：${pId}），填寫完畢即完成整場實驗！`);
             closeFinalChoiceModal();
+            window.location.href = prefilledSurveyUrl;
         }
 
         document.body.classList.add('modal-open');
