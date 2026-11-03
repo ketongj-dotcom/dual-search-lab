@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yaho! 奇摩搜尋 - 藍牙耳機採購實驗</title>
+    <title>Yaho! 呀齁搜尋 - 藍牙耳機採購實驗</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * { box-sizing: border-box; }
@@ -25,7 +25,7 @@
         .serp-two-col { display: flex; flex-direction: column; gap: 32px; width: 100%; }
         .serp-left-col { flex: 1; min-width: 0; }
         .serp-right-col { width: 100%; display: flex; flex-direction: column; gap: 24px; flex-shrink: 0; }
-        @media (min-width: 900px) { .serp-two-col { flex-direction: row; align-items: flex-start; } .serp-right-col { width: 300px; position: sticky; top: 64px; } }
+        @media (min-width: 900px) { .serp-two-col { flex-direction: row; align-items: flex-start; } .serp-right-col { width: 300px; position: sticky; top: 82px; } }
         .w-full { width: 100%; } .w-3 { width: 12px; } .h-3 { height: 12px; } .w-6 { width: 24px; } .h-6 { height: 24px; } .w-7 { width: 28px; } .h-7 { height: 28px; } .w-10 { width: 40px; } .h-10 { height: 40px; } .w-16 { width: 64px; } .h-16 { height: 64px; } .w-20 { width: 80px; } .w-24 { width: 96px; } .h-24 { height: 96px; } .w-48 { width: 192px; } .h-48 { height: 192px; } .w-60 { width: 240px; }
         .object-contain { object-fit: contain; } .min-w-\[155px\] { min-width: 155px; } .max-w-xs { max-width: 20rem; } .max-w-md { max-width: 28rem; } .max-w-xl { max-width: 36rem; } .max-w-2xl { max-width: 42rem; } .max-w-4xl { max-width: 56rem; } .max-w-5xl { max-width: 64rem; } .max-w-6xl { max-width: 72rem; } .min-h-screen { min-height: 100vh; } .min-h-full { min-height: 100%; } .aspect-square { aspect-ratio: 1 / 1; }
         .mx-auto { margin-left: auto; margin-right: auto; } .my-auto { margin-top: auto; margin-bottom: auto; } .mx-2 { margin-left: 8px; margin-right: 8px; } .my-1 { margin-top: 4px; margin-bottom: 4px; } .my-2 { margin-top: 8px; margin-bottom: 8px; }
@@ -56,33 +56,39 @@
 </head>
 <body class="bg-white text-slate-800 min-h-screen flex flex-col">
 
-    <!-- 階段一：實驗任務說明彈窗 (口語好懂版，不標示組別，點左上角可隨時重看) -->
+    <!-- 階段一：實驗任務說明彈窗 (精簡好讀版 + 6款耳機一行一款清楚呈現) -->
     <div id="introScreen">
-        <div class="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-2xl border border-slate-200 my-auto">
+        <div class="max-w-2xl w-full bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-200 my-auto">
             <span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full inline-block">實驗任務說明</span>
-            <h1 class="text-2xl font-bold text-slate-900 mt-3 mb-2">幫自己挑一副最合適的藍牙耳機</h1>
+            <h1 class="text-2xl font-bold text-slate-900 mt-2 mb-2">幫自己挑一副最合適的藍牙耳機</h1>
             <p class="text-sm text-slate-600 mb-3 leading-relaxed">
-                想像你是一位上班族，平時上下班會搭捷運通勤，週末則喜歡到戶外慢跑或去健身房運動。現在你想買一副新的真無線藍牙耳機。接下來你會進入搜尋引擎畫面，<strong>就想像你平常在 Google 搜尋產品一樣</strong>，自己輸入關鍵字來查找資料，並從下面這 <strong>6 款耳機</strong>當中，挑出最符合你需求的一款：
+                你是一位平日搭捷運通勤、週末會去戶外慢跑運動的上班族。請<strong>想像你平常在 Google 搜尋產品一樣</strong>，自己輸入關鍵字查找資料，從以下 <strong>6 款候選耳機</strong> 中挑出最符合需求的一款：
             </p>
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-xs text-slate-700">
-                <strong>🎧 可選擇的耳機款式（共 6 款）：</strong><br>
-                1. <strong>H20 Neonlite 2</strong> ｜ 2. <strong>Sooglur Pixel Buds Pro 4</strong> ｜ 3. <strong>Guava Go Pods3</strong><br>
-                4. <strong>JKT Live Beat 3</strong> ｜ 5. <strong>Naiwa Buds Pro Wi-Fi</strong> ｜ 6. <strong>Tikkak-Audio X5</strong>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4 text-xs sm:text-sm text-slate-800">
+                <div class="font-bold text-purple-700 mb-2">🎧 可選擇的候選耳機款式（共 6 款，請從這 6 款中六選一）：</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 font-medium">
+                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">1. <strong>H20 Neonlite 2</strong></div>
+                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">2. <strong>Sooglur Pixel Buds Pro 4</strong></div>
+                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">3. <strong>Guava Go Pods3</strong></div>
+                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">4. <strong>JKT Live Beat 3</strong></div>
+                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">5. <strong>Naiwa Buds Pro Wi-Fi</strong></div>
+                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">6. <strong>Tikkak-Audio X5</strong></div>
+                </div>
             </div>
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 text-sm space-y-3">
-                <div class="border-b border-amber-200 pb-2">
-                    <p class="font-bold text-red-600 mb-1">🚫 三大基本需求（只要有一項不合，就不考慮）：</p>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm space-y-3">
+                <div class="border-b border-amber-200 pb-2.5">
+                    <p class="font-bold text-red-600 mb-1.5">🚫 三大基本硬性需求（只要有一項不合，就淘汰不考慮）：</p>
                     <ul class="list-disc list-inside text-slate-700 space-y-1">
-                        <li><strong>預算上限：</strong> 價格要在 <strong>NT$7,500（含）以內</strong>。</li>
-                        <li><strong>防塵防水：</strong> 因為會在戶外運動，防護等級至少要達到 <strong>IP54 或更高</strong>（如果只有 <strong>IPX4</strong> 沒有防塵，就不符合需求）。</li>
-                        <li><strong>多點連線：</strong> 上班時需要同時連電腦和手機，所以必須支援 <strong>「雙裝置連線（多點連線）」</strong>。</li>
+                        <li><strong>預算上限：</strong> 價格在 <strong>NT$7,500（含）以內</strong>。</li>
+                        <li><strong>防塵防水：</strong> 防護等級至少達 <strong>IP54 或更高</strong>（若只有 <strong>IPX4</strong> 無防塵則淘汰）。</li>
+                        <li><strong>多點連線：</strong> 必須支援 <strong>「雙裝置連線（多點連線）」</strong>（同時連電腦與手機）。</li>
                     </ul>
                 </div>
-                <div class="pt-1">
-                    <p class="font-bold text-blue-700 mb-1">⚖️ 如果同時有好幾款都符合上面的基本需求，請依下面的順序來挑選：</p>
+                <div class="pt-0.5">
+                    <p class="font-bold text-blue-700 mb-1.5">⚖️ 若有多款同時符合上述三項需求，請依序比較：</p>
                     <ol class="list-decimal list-inside text-slate-700 space-y-1">
                         <li><strong>先比「開啟降噪（ANC）的單次續航時間」：</strong> 一次充電能聽越久的越優先。</li>
-                        <li><strong>再比「價格與重量」：</strong> 如果連開降噪的單次續航時間也一樣，就選 <strong>價格比較便宜划算</strong> 的那一款（萬一價格又相同，再選單耳重量比較輕的）。</li>
+                        <li><strong>再比「價格與重量」：</strong> 若開降噪單次續航相同，選 <strong>價格較便宜划算</strong> 的那款（若價格又相同，再選單耳重量較輕的）。</li>
                     </ol>
                 </div>
             </div>
@@ -92,28 +98,34 @@
         </div>
     </div>
 
-    <!-- 頂部常駐任務小抄列 -->
-    <header class="bg-slate-900 text-white py-2 px-6 sticky top-0 z-30 shadow-md">
-        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div class="flex flex-wrap items-center gap-2">
-                <button onclick="reopenTaskModal()" class="bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded cursor-pointer flex items-center gap-1 shadow-sm">
-                    📋 查看任務說明
+    <!-- 頂部常駐任務小抄列（方案一：含 6 款候選耳機名單與挑選條件） -->
+    <header class="bg-slate-900 text-white py-2 px-4 sm:px-6 sticky top-0 z-30 shadow-md">
+        <div class="max-w-6xl mx-auto flex flex-col gap-1.5 text-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="reopenTaskModal()" class="bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded cursor-pointer flex items-center gap-1 shadow-sm">
+                        📋 查看任務說明
+                    </button>
+                    <span><strong>條件：</strong>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>支援雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
+                </div>
+                <button onclick="openFinalChoiceModal()" class="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs">
+                    決定好了，提交最終選擇 &rarr;
                 </button>
-                <span>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>可連雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
             </div>
-            <button onclick="openFinalChoiceModal()" class="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs">
-                決定好了，提交最終選擇 &rarr;
-            </button>
+            <div class="text-[11px] text-slate-300 border-t border-slate-700 pt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span class="text-amber-300 font-bold">🎧 候選 6 款（六選一）：</span>
+                <span>① H20 Neonlite 2</span>｜<span>② Sooglur Pixel Buds Pro 4</span>｜<span>③ Guava Go Pods3</span>｜<span>④ JKT Live Beat 3</span>｜<span>⑤ Naiwa Buds Pro Wi-Fi</span>｜<span>⑥ Tikkak-Audio X5</span>
+            </div>
         </div>
     </header>
 
     <!-- Yaho! 初始大首頁 (搜尋框無預設提示詞) -->
     <div id="yahoHomeHero" class="flex-1 flex flex-col items-center justify-center p-6 -mt-10 bg-slate-50">
         <h1 class="text-6xl font-extrabold tracking-tight text-purple-700 mb-8 select-none" style="font-family: Arial, sans-serif;">
-            Yaho!<span class="text-2xl font-bold text-purple-500 ml-1">奇摩搜尋</span>
+            Yaho!<span class="text-2xl font-bold text-purple-500 ml-1">呀齁搜尋</span>
         </h1>
         <div class="max-w-xl w-full flex shadow-md rounded-full overflow-hidden border-2 border-purple-600 bg-white">
-            <input id="heroSearchInput" type="text" class="flex-1 px-6 py-3.5 text-base" onkeypress="if(event.key === 'Enter') triggerSearchFromHero()">
+            <input id="heroSearchInput" type="text" autocomplete="off" class="flex-1 px-6 py-3.5 text-base" onkeypress="if(event.key === 'Enter') triggerSearchFromHero()">
             <button onclick="triggerSearchFromHero()" class="bg-purple-700 text-white px-8 font-bold text-base cursor-pointer">搜尋</button>
         </div>
     </div>
@@ -202,22 +214,29 @@
         </div>
     </main>
 
-    <!-- 網頁點擊後的彈出視窗 -->
+    <!-- 網頁點擊後的彈出視窗（做法 A：移除紅黃綠假圓點改為返回按鈕 + 內建頂部任務條件與 6 款小抄） -->
     <div id="documentModal" class="hidden">
-        <div class="bg-slate-100 w-full max-w-5xl sm:rounded-2xl shadow-2xl relative flex flex-col overflow-hidden border border-slate-300 my-auto" style="height: 90vh;">
-            <div class="bg-slate-200 border-b border-slate-300 px-4 py-2.5 flex justify-between items-center shrink-0">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-red-400 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
+        <div class="bg-slate-100 w-full max-w-5xl sm:rounded-2xl shadow-2xl relative flex flex-col overflow-hidden border border-slate-300 my-auto" style="height: 92vh;">
+            <div class="bg-slate-900 text-white px-4 py-2 text-xs flex flex-col gap-1 shrink-0">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span>📌 <strong>挑選條件：</strong>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>可連雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
+                    <button onclick="closeDocumentModal(); openFinalChoiceModal();" class="bg-emerald-500 text-white font-bold px-3 py-1 rounded text-xs cursor-pointer shrink-0">
+                        提交最終選擇 &rarr;
+                    </button>
                 </div>
-                <div class="flex items-center gap-2 w-full max-w-xl bg-white px-4 py-1.5 rounded-full border border-slate-300 text-xs text-slate-600 truncate shadow-inner mx-2">
+                <div class="text-[11px] text-slate-300">
+                    <span class="text-amber-300 font-bold">🎧 候選 6 款：</span>① H20 Neonlite 2 ｜ ② Sooglur Pixel Buds Pro 4 ｜ ③ Guava Go Pods3 ｜ ④ JKT Live Beat 3 ｜ ⑤ Naiwa Buds Pro Wi-Fi ｜ ⑥ Tikkak-Audio X5
+                </div>
+            </div>
+            <div class="bg-slate-200 border-b border-slate-300 px-4 py-2 flex justify-between items-center shrink-0">
+                <button onclick="closeDocumentModal()" class="bg-white text-slate-800 border border-slate-300 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1 cursor-pointer shrink-0 shadow-sm">
+                    &larr; 返回
+                </button>
+                <div class="flex items-center gap-2 w-full max-w-md bg-white px-4 py-1.5 rounded-full border border-slate-300 text-xs text-slate-600 truncate shadow-inner mx-2">
                     <span>🔒</span>
                     <span id="modalDomainText" class="truncate">https://example.com</span>
                 </div>
-                <button onclick="closeDocumentModal()" class="bg-slate-800 text-white px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer shrink-0 shadow">
-                    ✕ 關閉網頁
-                </button>
+                <div class="w-24"></div>
             </div>
             <div id="modalContent" class="flex-1 bg-slate-100 overflow-y-auto"></div>
         </div>
@@ -236,13 +255,12 @@
                 <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 05" data-brand="Naiwa Buds Pro Wi-Fi" class="mr-3"><span class="font-medium text-sm">Naiwa Buds Pro Wi-Fi</span></label>
                 <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer"><input type="radio" name="finalProduct" value="Model 06" data-brand="Tikkak-Audio X5" class="mr-3"><span class="font-medium text-sm">Tikkak-Audio X5</span></label>
             </div>
-            <div class="flex gap-3">
+            <div style="display:flex; gap:10px;">
                 <button onclick="closeFinalChoiceModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium cursor-pointer">返回繼續查資料</button>
                 <button onclick="submitFinalChoice()" class="flex-1 py-2.5 bg-purple-700 text-white rounded-xl text-sm font-bold cursor-pointer">確認送出答案</button>
             </div>
         </div>
     </div>
-
     <script>
         const API_BASE = 'http://localhost:3000/api';
         let hasTaskStarted = false;
@@ -278,7 +296,7 @@
         }
 
         // =========================================================================
-        // 🛍️ 全平台超豐富電商商品頁生成引擎 (100% 還原 9 張 momo 截圖的所有豐富細節與區塊！)
+        // 🛍️ 全平台超豐富電商商品頁生成引擎 (已將過期日期改為中性現貨到貨說明)
         // =========================================================================
         function buildRichStorePage(cfg) {
             const mainVisual = cfg.mainImg
@@ -291,7 +309,7 @@
 
             return `
                 <div class="mobile-frame text-slate-800 pb-0">
-                    <!-- 1. 頂部平台導覽列 + 5 大分頁籤 (對應截圖頂部) -->
+                    <!-- 1. 頂部平台導覽列 + 5 大分頁籤 -->
                     <div class="sticky top-0 bg-white z-40 border-b border-gray-200">
                         <div class="flex items-center px-3 py-2 gap-2">
                             <span class="text-gray-500 text-xl font-light cursor-pointer" onclick="closeDocumentModal()">&lsaquo;</span>
@@ -314,7 +332,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. 主視覺圖片區 + 官方授權紅金橫幅 (對應截圖 6) -->
+                    <!-- 2. 主視覺圖片區 + 官方授權紅金橫幅 -->
                     <div class="bg-white relative">
                         <div class="p-5 flex flex-col items-center justify-center aspect-square bg-slate-50 relative">
                             <div class="absolute top-3 left-4 flex items-center gap-1.5">
@@ -333,13 +351,13 @@
                         </div>
                     </div>
 
-                    <!-- 3. 標題、促銷價与熱銷金賞橫幅 (對應截圖 2 & 6) -->
+                    <!-- 3. 標題、促銷價與熱銷金賞橫幅 -->
                     <div class="bg-white p-3.5 border-b border-gray-100">
                         <div class="flex justify-between items-center text-[11px] mb-1">
                             <span class="text-red-700 font-bold">${cfg.slogan}</span>
                             <span class="text-gray-400">品號：${cfg.sku}</span>
                         </div>
-                        <div class="inline-block bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded mr-1">速 最快今日出貨</div>
+                        <div class="inline-block bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded mr-1">速 現貨快速出貨</div>
                         <h1 class="text-sm font-bold text-slate-900 leading-snug mt-1">${cfg.fullTitle}</h1>
                         <div class="flex items-baseline gap-2 mt-3">
                             <span class="text-2xl font-black" style="color:${cfg.themeColor};">$${cfg.price}</span>
@@ -354,7 +372,7 @@
                         <span class="text-red-600 text-[11px]">查看 &gt;</span>
                     </div>
 
-                    <!-- 4. 領取平台折價券 (對應截圖 2) -->
+                    <!-- 4. 領取平台折價券 -->
                     <div class="bg-white p-3.5 mt-2">
                         <div class="flex justify-between items-center mb-2.5">
                             <span class="text-xs font-bold border-l-4 pl-2" style="border-color:${cfg.themeColor};">領取專屬折價券</span>
@@ -369,7 +387,7 @@
                                 <div class="p-2 flex-1 bg-white flex flex-col justify-between text-[10px]">
                                     <div>
                                         <div class="font-bold text-slate-800 text-xs">滿$3,500可使用</div>
-                                        <div class="text-gray-500">效期：2026/10/25 23:59</div>
+                                        <div class="text-gray-500">領取後當日有效</div>
                                     </div>
                                     <div class="flex justify-between items-center mt-1">
                                         <span class="text-gray-400">(指定商品)</span>
@@ -386,13 +404,13 @@
                         </div>
                     </div>
 
-                    <!-- 5. 配送、保固、規格選擇與優惠活動 (對應截圖 2 & 3) -->
+                    <!-- 5. 配送、保固、規格選擇與優惠活動 -->
                     <div class="bg-white mt-2 text-xs divide-y">
                         <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">VIP權益</span><span class="text-slate-800">加入平台 VIP 會員享專屬點數雙倍送</span></div>
                         <div class="flex p-3 items-center"><span class="w-20 text-gray-500 shrink-0">商品規格</span>
                             <span class="border border-gray-300 rounded px-2.5 py-1 bg-gray-50 font-medium">${cfg.colors} &#9662;</span>
                         </div>
-                        <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">保固資訊</span><span>台灣代理商公司貨 · 原廠保固 1 年 175 天</span></div>
+                        <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">保固資訊</span><span>台灣代理商公司貨 · 原廠保固 1 年</span></div>
                         <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">付款方式</span><span class="leading-relaxed">信用卡｜無卡分期｜貨到付款｜行動支付<br><span class="text-gray-500">刷聯名卡享 3% 回饋，上限翻倍至 2 千</span></span></div>
                         <div class="flex p-3"><span class="w-20 text-gray-500 shrink-0">配送方式</span><span class="leading-relaxed">快速到貨/離島配送 <span class="text-gray-400">滿$490免運</span><br>超商取貨/i郵箱/門市取貨</span></div>
                         <div class="flex p-3 justify-between items-center"><span class="w-20 text-gray-500 shrink-0">品牌旗艦</span><span class="flex-1 font-bold">${cfg.brandName} 官方旗艦館 · <span class="text-blue-600">追蹤</span></span><span class="text-gray-400">進店逛逛 &gt;</span></div>
@@ -404,7 +422,7 @@
                         <div class="flex gap-2 items-start"><span class="bg-rose-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0">滿額贈</span><span class="text-slate-700">單筆滿 1,500 元送 10% 點數回饋（上限 350 點）</span></div>
                     </div>
 
-                    <!-- 6. 優惠加購商品區 (對應截圖 4 & 5) -->
+                    <!-- 6. 優惠加購商品區 -->
                     <div class="bg-white mt-2 p-3.5">
                         <div class="flex justify-between items-center mb-2.5">
                             <span class="text-xs font-bold border-l-4 pl-2" style="border-color:${cfg.themeColor};">優惠加購商品 (6)</span>
@@ -417,7 +435,7 @@
                         </div>
                     </div>
 
-                    <!-- 7. 商品評價區塊 (對應截圖 4 & 8) -->
+                    <!-- 7. 商品評價區塊 -->
                     <div class="bg-white mt-2 p-3.5">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xs font-bold border-l-4 pl-2" style="border-color:${cfg.themeColor};">商品評價</span>
@@ -431,18 +449,18 @@
                             <span class="font-bold" style="color:${cfg.themeColor};">總銷量 &gt; ${cfg.sales}</span>
                         </div>
                         <div class="py-2.5 border-b border-gray-100 text-xs">
-                            <div class="flex justify-between text-gray-400 text-[11px]"><span>*宗* &nbsp; 2026/10/22</span><span>👍 5</span></div>
+                            <div class="flex justify-between text-gray-400 text-[11px]"><span>*宗* &nbsp; 近期購買</span><span>👍 5</span></div>
                             <div class="text-amber-400 text-[11px] my-0.5">★★★★★ <span class="text-gray-400 ml-1">規格：${cfg.colors.split('、')[0]}</span></div>
                             <div class="text-slate-700 mt-1">${cfg.review1}</div>
                         </div>
                         <div class="py-2.5 text-xs">
-                            <div class="flex justify-between text-gray-400 text-[11px]"><span>*思* &nbsp; 2026/10/22</span><span>👍 3</span></div>
+                            <div class="flex justify-between text-gray-400 text-[11px]"><span>*思* &nbsp; 近期購買</span><span>👍 3</span></div>
                             <div class="text-amber-400 text-[11px] my-0.5">★★★★★ <span class="text-gray-400 ml-1">規格：${cfg.colors.split('、')[0]}</span></div>
                             <div class="text-slate-700 mt-1">${cfg.review2}</div>
                         </div>
                     </div>
 
-                    <!-- 8. 圖文詳情與核心規格 (對應截圖 8 & 9) -->
+                    <!-- 8. 圖文詳情與核心規格 -->
                     <div class="bg-white mt-2 p-3.5">
                         <div class="text-xs font-bold border-l-4 pl-2 mb-3" style="border-color:${cfg.themeColor};">圖文詳情（核心規格一覽）</div>
                         <ul class="text-xs space-y-1.5 text-slate-800 font-bold mb-4">
@@ -469,7 +487,7 @@
                         </div>
                     </div>
 
-                    <!-- 9. 藍底長效續航視覺海報 + 雙格配對快充圖 (對應截圖 5 & 7) -->
+                    <!-- 9. 藍底長效續航視覺海報 + 雙格配對快充圖 -->
                     <div class="bg-momo-cyan text-white p-6 text-center">
                         <h3 class="text-lg font-extrabold mb-2">長效電力續航</h3>
                         <p class="text-xs leading-relaxed mb-5">
@@ -503,7 +521,7 @@
                         </div>
                     </div>
 
-                    <!-- 10. 音場特色表格 + 粉紅通話海報 (對應截圖 1) -->
+                    <!-- 10. 音場特色表格 + 粉紅通話海報 -->
                     <div class="bg-white p-3.5">
                         <div class="text-xs font-bold mb-2">專屬音場模式與使用情境</div>
                         <table class="text-[11px] text-center border-slate-300">
@@ -535,10 +553,10 @@
                         </p>
                     </div>
 
-                    <!-- 11. 底部常駐：橘色到貨提示條 + 購物車/直接購買列 (對應截圖底部) -->
+                    <!-- 11. 底部常駐：現貨快速到貨提示條 + 購物車/直接購買列 (已移除過期日期) -->
                     <div class="sticky bottom-0 z-40 bg-white border-t border-gray-200 px-2 pt-1.5 pb-2 shadow-lg">
                         <div class="bg-momo-orange text-white text-center text-xs font-bold py-1 rounded-md mb-1.5 shadow-sm">
-                            預計明天 10/23 前到貨
+                            現貨供應 · 宅配約 1–2 個工作天快速到貨
                         </div>
                         <div class="flex items-center gap-1.5">
                             <div class="flex flex-col items-center justify-center px-2 text-[10px] text-gray-500 cursor-pointer">
@@ -566,7 +584,7 @@
             {
                 id: "noise_sony",
                 icon: "🟣",
-                sitename: "Yaho! 奇摩購物中心",
+                sitename: "Yaho! 呀齁購物中心",
                 url: "buy.yaho.com.tw > item > soli-wf-1000xm5",
                 title: "Soli WF-1000XM5 旗艦真無線藍牙降噪耳機 (快充 3 分鐘播 1 小時)",
                 snippet: "官方網路價 NT$8,990。充電約 3 分鐘播放約 1 小時，AAC/SBC 開啟 ANC 單次續航最長 8 小時，具備等化器與 DSEE Extreme...",
@@ -616,7 +634,7 @@
             {
                 id: "shop_model_01",
                 icon: "🟣",
-                sitename: "Yaho! 奇摩購物中心",
+                sitename: "Yaho! 呀齁購物中心",
                 url: "buy.yaho.com.tw > item > h20-neonlite-2",
                 title: "【官方旗艦】H20 Neonlite 2 雙單體 HiFi 主動降噪真無線藍牙耳機",
                 snippet: "官方參考定價 NT$7,490。搭載 10mm 低音 + 5.3mm 高音雙單體、最新 Bluetooth 6.1 與 IP57 高等級防塵防水，支援雙裝置多點自動切換...",
@@ -716,7 +734,7 @@
             {
                 id: "shop_model_05",
                 icon: "🟣",
-                sitename: "Yaho! 奇摩購物中心",
+                sitename: "Yaho! 呀齁購物中心",
                 url: "buy.yaho.com.tw > item > naiwa-buds-pro-wifi",
                 title: "【三單體怪獸】Naiwa Buds Pro Wi-Fi 55dB 旗艦降噪藍牙耳機 | ANC 約 10h 續航霸主",
                 snippet: "官方定價 NT$6,499。豪華三單體架構、最高 55dB 主動降噪，開啟 ANC 單次續航約 10 小時！支援智慧雙設備切換與 IPX4 生活防潑水...",
@@ -769,9 +787,9 @@
                 sitename: "耳機選購指南 | 無線耳機推薦 / 懶人包",
                 url: "earphone-guide.blog > 2026 > 4-tws-lazy-pack",
                 title: "New超狂懶人包，4種耳機推薦的耳機一次看完，根本佛心淚灑~",
-                snippet: "選購推薦｜更新：2026.10.23。這篇直接把四款無線耳機 Sooglur Pixel Buds Pro 4、Guava Go Pods3、JKT Live Beat 3、Tikkak-Audio X5 的重點攤開來看！從規格、IP 防護等級到常見問題一次整理...",
+                snippet: "選購推薦｜這篇直接把四款無線耳機 Sooglur Pixel Buds Pro 4、Guava Go Pods3、JKT Live Beat 3、Tikkak-Audio X5 的重點攤開來看！從規格、IP 防護等級到常見問題一次整理...",
                 keywords: ["部落格", "評測", "推薦", "懶人包", "選購指南", "無線耳機", "藍牙耳機", "耳機", "sooglur", "guava", "jkt", "tikkak", "防水", "防塵", "ip54", "ip55", "ipx4", "多點連線", "雙裝置", "價格", "比較"],
-                content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-slate-900 text-white px-6 py-3.5 flex justify-between items-center text-xs font-bold"><span>耳機選購指南</span><span class="text-slate-400">無線耳機推薦 / 懶人包</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-3"><div class="text-xs text-slate-400">首頁 &rsaquo; 選購指南 &rsaquo; 無線耳機推薦</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">New超狂懶人包，4種耳機推薦的耳機一次看完，根本佛心淚灑~</h1><div class="text-xs text-slate-400 pb-2 border-b">選購推薦 ｜ 更新：2026.10.23</div><p class="text-sm text-slate-700 leading-relaxed">耳機一搜下去，每款都在喊降噪、長續航、高音質，看到最後只剩一個問題：所以我到底該買哪一副？這篇直接把四款無線耳機的重點攤開來看！</p><h2 class="text-lg font-extrabold text-slate-900">精選速覽：先找出你的那一款</h2><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>型號 / 參考售價</th><th>推薦族群</th><th>推薦原因</th></tr></thead><tbody><tr><td><strong class="text-sky-700">Sooglur Pixel Buds Pro 4</strong><br>NT$7,490</td><td>通勤、工作切換</td><td>單耳 4.7g、多點連線，兼顧日常便利</td></tr><tr><td><strong class="text-sky-700">Guava Go Pods3</strong><br>NT$5,990</td><td>預算有限、多裝置使用</td><td>四款中價格較低，仍有 ANC、多點連線與 IP54</td></tr><tr><td><strong class="text-sky-700">JKT Live Beat 3</strong><br>NT$7,490</td><td>偏好長續航、特色充電盒</td><td>觸控彩色螢幕充電盒，ANC 開啟約 9 小時</td></tr><tr><td><strong class="text-sky-700">Tikkak-Audio X5</strong><br>NT$7,980</td><td>在意編碼、充電盒功能</td><td>aptX Adaptive、多點連線，充電盒具深紫外線殺菌功能</td></tr></tbody></table></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">01 / 輕巧通勤派</div><h2 class="text-xl font-black">Sooglur Pixel Buds Pro 4 — 手機、電腦都要顧到，耳朵也想少點負擔</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A02_米.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">米</div></div><div>${imgTag('A02_綠.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">綠</div></div><div>${imgTag('A02_灰.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">灰</div></div><div>${imgTag('A02_粉.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">粉</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜4.7g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>音訊編碼</strong>｜AAC、SBC、Opus</div><div><strong>單體</strong>｜11mm 訂製動圈</div><div><strong>降噪</strong>｜Silent Seal 2.0 ANC</div><div><strong>單次續航</strong>｜ANC 開 8 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 30 小時（未列 ANC 條件）</div><div><strong>充電</strong>｜Qi 無線充電</div><div><strong>快充</strong>｜5 分鐘用 1.5 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ 單耳 4.7g 較輕；+ 支援多點連線與 Qi 無線充電。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 無 LDAC 或 aptX；− IP54 防塵防潑水但不能游泳。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">02 / 預算務實派</div><h2 class="text-xl font-black">Guava Go Pods3 — 想把錢花在常用功能，這副值得先看</h2><div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A03_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A03_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div><div>${imgTag('A03_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$5,990</div><div><strong>單耳重量</strong>｜5.5g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.3，支援多點連線</div><div><strong>音訊編碼</strong>｜aptX、AAC、SBC、LC3</div><div><strong>單體</strong>｜7mm TrueResponse 動圈</div><div><strong>降噪</strong>｜Hybrid ANC 混合式主動降噪</div><div><strong>單次續航</strong>｜ANC 開約 8 小時／關 11 小時</div><div><strong>含盒續航</strong>｜最高 28 小時</div><div><strong>充電</strong>｜Type-C</div><div><strong>快充</strong>｜10 分鐘用 1 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ NT$5,990 好入手；+ 多點連線、ANC 與 IP54 都有列入規格。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 單耳 5.5g 是四款中較重的一款。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">03 / 功能控看這裡</div><h2 class="text-xl font-black">JKT Live Beat 3 — 充電盒有螢幕，續航數字也很有看頭</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A04_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A04_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div><div>${imgTag('A04_銀.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">銀</div></div><div>${imgTag('A04_紫.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">紫</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜5.0g；<strong>防護</strong>｜IP55</div><div><strong>連線</strong>｜Bluetooth 5.3，<span class="text-red-600 font-bold">不支援多點連線</span></div><div><strong>音訊編碼</strong>｜LDAC、AAC、SBC</div><div><strong>單次續航</strong>｜ANC 開約 9 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 36 小時（觸控彩色螢幕盒）</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：不支援多點連線，每天在手機和筆電之間切換的人要留意！</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">04 / 特色配備派</div><h2 class="text-xl font-black">Tikkak-Audio X5 — 把焦點放在編碼支援與充電盒設計</h2><div class="grid grid-cols-2 gap-2 text-center bg-slate-50 p-3 rounded-xl max-w-md mx-auto"><div>${imgTag('A06_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A06_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜<span class="text-red-600 font-bold">NT$7,980</span></div><div><strong>單耳重量</strong>｜5.4g；<strong>防護</strong>｜<span class="text-red-600 font-bold">IPX4</span></div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>單次續航</strong>｜ANC 開 6 小時／關 7.5 小時</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：ANC 開啟 6 小時；IPX4 未列防塵等級；售價 NT$7,980 也是四款中較高。</div></section><hr><section class="space-y-2 text-xs"><h2 class="text-base font-black">05 / IP 防塵防水解讀 & 常見問題 FAQ</h2><p>IP 後第一個位置看固體異物防護（防塵），第二個看進水防護（防水）；<strong>X 代表沒有列出該項等級</strong>：</p><table class="text-xs"><thead><tr class="bg-slate-100"><th>等級與本篇產品</th><th>重點解讀</th></tr></thead><tbody><tr><td class="font-bold text-emerald-700">IP54｜Sooglur、Guava</td><td>具防塵與防潑水等級。</td></tr><tr><td class="font-bold text-emerald-700">IP55｜JKT</td><td>具防塵與水柱測試等級（但 JKT 不支援多點連線）。</td></tr><tr><td class="font-bold text-red-600">IPX4｜Tikkak-Audio</td><td>列有防潑水等級；<strong>沒有列出防塵等級</strong>。</td></tr></tbody></table></section></article></div>`
+                content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-slate-900 text-white px-6 py-3.5 flex justify-between items-center text-xs font-bold"><span>耳機選購指南</span><span class="text-slate-400">無線耳機推薦 / 懶人包</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-3"><div class="text-xs text-slate-400">首頁 &rsaquo; 選購指南 &rsaquo; 無線耳機推薦</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">New超狂懶人包，4種耳機推薦的耳機一次看完，根本佛心淚灑~</h1><div class="text-xs text-slate-400 pb-2 border-b">選購推薦 ｜ 無線耳機專題整理</div><p class="text-sm text-slate-700 leading-relaxed">耳機一搜下去，每款都在喊降噪、長續航、高音質，看到最後只剩一個問題：所以我到底該買哪一副？這篇直接把四款無線耳機的重點攤開來看！</p><h2 class="text-lg font-extrabold text-slate-900">精選速覽：先找出你的那一款</h2><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>型號 / 參考售價</th><th>推薦族群</th><th>推薦原因</th></tr></thead><tbody><tr><td><strong class="text-sky-700">Sooglur Pixel Buds Pro 4</strong><br>NT$7,490</td><td>通勤、工作切換</td><td>單耳 4.7g、多點連線，兼顧日常便利</td></tr><tr><td><strong class="text-sky-700">Guava Go Pods3</strong><br>NT$5,990</td><td>預算有限、多裝置使用</td><td>四款中價格較低，仍有 ANC、多點連線與 IP54</td></tr><tr><td><strong class="text-sky-700">JKT Live Beat 3</strong><br>NT$7,490</td><td>偏好長續航、特色充電盒</td><td>觸控彩色螢幕充電盒，ANC 開啟約 9 小時</td></tr><tr><td><strong class="text-sky-700">Tikkak-Audio X5</strong><br>NT$7,980</td><td>在意編碼、充電盒功能</td><td>aptX Adaptive、多點連線，充電盒具深紫外線殺菌功能</td></tr></tbody></table></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">01 / 輕巧通勤派</div><h2 class="text-xl font-black">Sooglur Pixel Buds Pro 4 — 手機、電腦都要顧到，耳朵也想少點負擔</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A02_米.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">米</div></div><div>${imgTag('A02_綠.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">綠</div></div><div>${imgTag('A02_灰.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">灰</div></div><div>${imgTag('A02_粉.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">粉</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜4.7g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>音訊編碼</strong>｜AAC、SBC、Opus</div><div><strong>單體</strong>｜11mm 訂製動圈</div><div><strong>降噪</strong>｜Silent Seal 2.0 ANC</div><div><strong>單次續航</strong>｜ANC 開 8 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 30 小時（未列 ANC 條件）</div><div><strong>充電</strong>｜Qi 無線充電</div><div><strong>快充</strong>｜5 分鐘用 1.5 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ 單耳 4.7g 較輕；+ 支援多點連線與 Qi 無線充電。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 無 LDAC 或 aptX；− IP54 防塵防潑水但不能游泳。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">02 / 預算務實派</div><h2 class="text-xl font-black">Guava Go Pods3 — 想把錢花在常用功能，這副值得先看</h2><div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A03_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A03_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div><div>${imgTag('A03_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$5,990</div><div><strong>單耳重量</strong>｜5.5g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.3，支援多點連線</div><div><strong>音訊編碼</strong>｜aptX、AAC、SBC、LC3</div><div><strong>單體</strong>｜7mm TrueResponse 動圈</div><div><strong>降噪</strong>｜Hybrid ANC 混合式主動降噪</div><div><strong>單次續航</strong>｜ANC 開約 8 小時／關 11 小時</div><div><strong>含盒續航</strong>｜最高 28 小時</div><div><strong>充電</strong>｜Type-C</div><div><strong>快充</strong>｜10 分鐘用 1 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ NT$5,990 好入手；+ 多點連線、ANC 與 IP54 都有列入規格。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 單耳 5.5g 是四款中較重的一款。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">03 / 功能控看這裡</div><h2 class="text-xl font-black">JKT Live Beat 3 — 充電盒有螢幕，續航數字也很有看頭</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A04_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A04_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div><div>${imgTag('A04_銀.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">銀</div></div><div>${imgTag('A04_紫.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">紫</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜5.0g；<strong>防護</strong>｜IP55</div><div><strong>連線</strong>｜Bluetooth 5.3，<span class="text-red-600 font-bold">不支援多點連線</span></div><div><strong>音訊編碼</strong>｜LDAC、AAC、SBC</div><div><strong>單次續航</strong>｜ANC 開約 9 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 36 小時（觸控彩色螢幕盒）</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：不支援多點連線，每天在手機和筆電之間切換的人要留意！</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">04 / 特色配備派</div><h2 class="text-xl font-black">Tikkak-Audio X5 — 把焦點放在編碼支援與充電盒設計</h2><div class="grid grid-cols-2 gap-2 text-center bg-slate-50 p-3 rounded-xl max-w-md mx-auto"><div>${imgTag('A06_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A06_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜<span class="text-red-600 font-bold">NT$7,980</span></div><div><strong>單耳重量</strong>｜5.4g；<strong>防護</strong>｜<span class="text-red-600 font-bold">IPX4</span></div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>單次續航</strong>｜ANC 開 6 小時／關 7.5 小時</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：ANC 開啟 6 小時；IPX4 未列防塵等級；售價 NT$7,980 也是四款中較高。</div></section><hr><section class="space-y-2 text-xs"><h2 class="text-base font-black">05 / IP 防塵防水解讀 & 常見問題 FAQ</h2><p>IP 後第一個位置看固體異物防護（防塵），第二個看進水防護（防水）；<strong>X 代表沒有列出該項等級</strong>：</p><table class="text-xs"><thead><tr class="bg-slate-100"><th>等級與本篇產品</th><th>重點解讀</th></tr></thead><tbody><tr><td class="font-bold text-emerald-700">IP54｜Sooglur、Guava</td><td>具防塵與防潑水等級。</td></tr><tr><td class="font-bold text-emerald-700">IP55｜JKT</td><td>具防塵與水柱測試等級（但 JKT 不支援多點連線）。</td></tr><tr><td class="font-bold text-red-600">IPX4｜Tikkak-Audio</td><td>列有防潑水等級；<strong>沒有列出防塵等級</strong>。</td></tr></tbody></table></section></article></div>`
             },
 
             // [部落格 2/2] 五款無線耳機續航評比與選購推薦
@@ -781,9 +799,9 @@
                 sitename: "BLOG 挑選指南 | 3C 續航實測誌",
                 url: "tech-blog.tw > 2026 > 5-tws-battery-review",
                 title: "五款無線耳機續航評比與選購推薦：別讓耳機比你先下班！通勤與長時間外出的選購指南",
-                snippet: "21/10 2026 挑選指南。這次讓 Tecnick EAH-AZ100、H20 Neonlite 2、Soli WF-1000XM5、Naiwa Buds Pro Wi-Fi、Guava Go Pods3 一起登場，比較單次播放、充電盒補電與快充...",
+                snippet: "挑選指南。這次讓 Tecnick EAH-AZ100、H20 Neonlite 2、Soli WF-1000XM5、Naiwa Buds Pro Wi-Fi、Guava Go Pods3 一起登場，比較單次播放、充電盒補電與快充...",
                 keywords: ["部落格", "評測", "推薦", "續航", "電力", "快充", "anc", "降噪", "耳機", "比較", "藍牙耳機", "無線耳機", "tecnick", "h20", "soli", "naiwa", "guava"],
-                content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-white border-b px-6 py-3 flex justify-between text-xs text-slate-500 font-bold"><span>MENU</span><span>HOME &gt; BLOG &gt; BACK</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-2"><div class="text-xs font-bold text-slate-500">21/10 挑選指南 2026.</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">五款無線耳機續航評比與選購推薦</h1><div class="text-sm font-bold text-sky-700">別讓耳機比你先下班 通勤與長時間外出的選購指南</div><p class="text-xs sm:text-sm text-slate-700 leading-relaxed">這次讓 <strong>Tecnick EAH-AZ100、H20 Neonlite 2、Soli WF-1000XM5、Naiwa Buds Pro Wi-Fi、Guava Go Pods3</strong> 一起登場，比較單次播放、充電盒補電與快充。平常會開 ANC，就優先看降噪開啟的數字！</p></section><hr><section class="space-y-4 text-xs sm:text-sm"><div class="p-3 bg-slate-50 rounded-lg border"><strong>1. Tecnick EAH-AZ100：</strong>AAC 模式開啟 ANC 單次約 10 小時、關閉 ANC 約 12 小時；快充 15 分鐘可用約 90 分鐘。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>2. H20 Neonlite 2（通勤分段聽）：</strong>ANC 單次續航<strong>約 6 小時</strong>，關閉 ANC 約 7.5 小時；快充 10 分鐘可用 2.5 小時，含盒最高 26 小時。若常常「一戴就不想停」，應把單次續航放在更前面比較。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>3. Soli WF-1000XM5：</strong>AAC/SBC 開啟 ANC 最長 8 小時，關閉降噪最長 12 小時；快充 3 分鐘播 1 小時。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>4. Naiwa Buds Pro Wi-Fi：</strong>標示 ANC 開啟<strong>約 10 小時</strong>，關閉約 14 小時，含盒最高 38 小時。<br><span class="text-red-600 font-bold">⚠️ 規格觀察：它標示的 IPX4 並不符合 IP54 以上的防塵防潑水條件；若戶外需求包含防塵，仍得把防護規格一起看。</span></div><div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200"><strong>5. Guava Go Pods3（讓歌單多陪你一段路）：</strong>開啟 ANC <strong>約可聽 8 小時</strong>，關閉 ANC 約 11 小時，含盒最高 28 小時。相較 H20 Neonlite 2 多出約 2 小時的 ANC 單次續航，讓較長行程多些餘裕！</div></section><h3 class="text-base font-black text-sky-700 text-center pt-2">五款耳機續航比較表</h3><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>產品</th><th>ANC 開啟單次</th><th>ANC 關閉單次</th><th>快充標示</th></tr></thead><tbody><tr><td>Tecnick EAH-AZ100</td><td>約 10 小時</td><td>約 12 小時</td><td>至少 15 分鐘 &rarr; 約 90 分鐘</td></tr><tr><td class="font-bold">H20 Neonlite 2</td><td>約 6 小時</td><td>約 7.5 小時</td><td>10 分鐘 &rarr; 2.5 小時</td></tr><tr><td>Soli WF-1000XM5</td><td>最長 8 小時</td><td>最長 12 小時</td><td>3 分鐘 &rarr; 約 1 小時</td></tr><tr><td class="font-bold">Naiwa Buds Pro Wi-Fi</td><td>約 10 小時 (僅IPX4)</td><td>約 14 小時</td><td>10 分鐘 &rarr; 3 小時</td></tr><tr class="bg-emerald-50 font-bold"><td>Guava Go Pods3</td><td>約 8 小時</td><td>約 11 小時</td><td>10 分鐘 &rarr; 1 小時</td></tr></tbody></table></article></div>`
+                content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-white border-b px-6 py-3 flex justify-between text-xs text-slate-500 font-bold"><span>MENU</span><span>HOME &gt; BLOG &gt; BACK</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-2"><div class="text-xs font-bold text-slate-500">挑選指南 · 續航實測專題</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">五款無線耳機續航評比與選購推薦</h1><div class="text-sm font-bold text-sky-700">別讓耳機比你先下班 通勤與長時間外出的選購指南</div><p class="text-xs sm:text-sm text-slate-700 leading-relaxed">這次讓 <strong>Tecnick EAH-AZ100、H20 Neonlite 2、Soli WF-1000XM5、Naiwa Buds Pro Wi-Fi、Guava Go Pods3</strong> 一起登場，比較單次播放、充電盒補電與快充。平常會開 ANC，就優先看降噪開啟的數字！</p></section><hr><section class="space-y-4 text-xs sm:text-sm"><div class="p-3 bg-slate-50 rounded-lg border"><strong>1. Tecnick EAH-AZ100：</strong>AAC 模式開啟 ANC 單次約 10 小時、關閉 ANC 約 12 小時；快充 15 分鐘可用約 90 分鐘。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>2. H20 Neonlite 2（通勤分段聽）：</strong>ANC 單次續航<strong>約 6 小時</strong>，關閉 ANC 約 7.5 小時；快充 10 分鐘可用 2.5 小時，含盒最高 26 小時。若常常「一戴就不想停」，應把單次續航放在更前面比較。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>3. Soli WF-1000XM5：</strong>AAC/SBC 開啟 ANC 最長 8 小時，關閉降噪最長 12 小時；快充 3 分鐘播 1 小時。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>4. Naiwa Buds Pro Wi-Fi：</strong>標示 ANC 開啟<strong>約 10 小時</strong>，關閉約 14 小時，含盒最高 38 小時。<br><span class="text-red-600 font-bold">⚠️ 規格觀察：它標示的 IPX4 並不符合 IP54 以上的防塵防潑水條件；若戶外需求包含防塵，仍得把防護規格一起看。</span></div><div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200"><strong>5. Guava Go Pods3（讓歌單多陪你一段路）：</strong>開啟 ANC <strong>約可聽 8 小時</strong>，關閉 ANC 約 11 小時，含盒最高 28 小時。相較 H20 Neonlite 2 多出約 2 小時的 ANC 單次續航，讓較長行程多些餘裕！</div></section><h3 class="text-base font-black text-sky-700 text-center pt-2">五款耳機續航比較表</h3><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>產品</th><th>ANC 開啟單次</th><th>ANC 關閉單次</th><th>快充標示</th></tr></thead><tbody><tr><td>Tecnick EAH-AZ100</td><td>約 10 小時</td><td>約 12 小時</td><td>至少 15 分鐘 &rarr; 約 90 分鐘</td></tr><tr><td class="font-bold">H20 Neonlite 2</td><td>約 6 小時</td><td>約 7.5 小時</td><td>10 分鐘 &rarr; 2.5 小時</td></tr><tr><td>Soli WF-1000XM5</td><td>最長 8 小時</td><td>最長 12 小時</td><td>3 分鐘 &rarr; 約 1 小時</td></tr><tr><td class="font-bold">Naiwa Buds Pro Wi-Fi</td><td>約 10 小時 (僅IPX4)</td><td>約 14 小時</td><td>10 分鐘 &rarr; 3 小時</td></tr><tr class="bg-emerald-50 font-bold"><td>Guava Go Pods3</td><td>約 8 小時</td><td>約 11 小時</td><td>10 分鐘 &rarr; 1 小時</td></tr></tbody></table></article></div>`
             }
         ];
 
@@ -830,22 +848,54 @@
             document.getElementById('heroSearchInput').focus();
         }
 
+       // 修正搜尋邏輯：必須命中有效關鍵字（如耳機、earphone、型號或規格）才顯示結果，亂打字則顯示查無資料
         function executeSearch(rawQuery) {
             const tokens = rawQuery.toLowerCase().split(/\s+/).filter(Boolean);
-            let matched = webPages;
-            if (rawQuery) {
-                const filtered = webPages.filter(page => {
-                    const fullText = (page.title + ' ' + page.snippet + ' ' + page.keywords.join(' ')).toLowerCase();
-                    return tokens.some(token => fullText.includes(token));
-                });
-                if (filtered.length > 0) matched = filtered;
-            }
-            matched = [...matched].sort(() => Math.random() - 0.5);
-            logEvent('search', rawQuery, { results_count: matched.length });
-            document.getElementById('searchStatus').innerHTML = `「<strong>${rawQuery}</strong>」約有 ${matched.length} 項搜尋結果`;
-            renderSerp(matched, tokens);
-        }
+            let matched = [];
 
+            if (rawQuery) {
+                const scored = webPages.map((page, originalIndex) => {
+                    const titleLower = page.title.toLowerCase();
+                    const snippetLower = page.snippet.toLowerCase();
+                    // 額外允許英文 earphone / earbuds / tws 等字眼也能搜出耳機資料
+                    const kwLower = (page.keywords.join(' ') + ' earphone earphones earbuds tws').toLowerCase();
+                    let score = 0;
+                    tokens.forEach(token => {
+                        if (titleLower.includes(token)) score += 3;
+                        if (kwLower.includes(token)) score += 2;
+                        if (snippetLower.includes(token)) score += 1;
+                    });
+                    return { page, score, originalIndex };
+                }).filter(item => item.score > 0);
+
+                if (scored.length > 0) {
+                    scored.sort((a, b) => (b.score !== a.score) ? (b.score - a.score) : (a.originalIndex - b.originalIndex));
+                    matched = scored.map(item => item.page);
+                }
+            }
+
+            // 如果查無資料，順便把上方的贊助購物推薦卡隱藏，找到資料才顯示
+            const adSection = document.getElementById('adCarouselSection');
+            if (adSection) {
+                if (matched.length > 0) adSection.classList.remove('hidden');
+                else adSection.classList.add('hidden');
+            }
+
+            logEvent('search', rawQuery, { results_count: matched.length });
+
+            if (matched.length === 0) {
+                document.getElementById('searchStatus').innerHTML = `找不到符合「<strong>${rawQuery}</strong>」的網頁。`;
+                document.getElementById('serpContainer').innerHTML = `
+                    <div class="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-600 my-4">
+                        <div class="text-3xl mb-2">🔍</div>
+                        <div class="font-bold text-slate-800 text-base mb-1">很抱歉，找不到符合「${rawQuery}」的搜尋結果</div>
+                        <div class="text-xs text-slate-500">建議請輸入與任務相關的關鍵字，例如：<strong>耳機</strong>、<strong>藍牙耳機</strong>、<strong>earphone</strong> 或候選耳機型號名稱。</div>
+                    </div>`;
+            } else {
+                document.getElementById('searchStatus').innerHTML = `「<strong>${rawQuery}</strong>」約有 ${matched.length} 項搜尋結果`;
+                renderSerp(matched, tokens);
+            }
+        }
         function renderSerp(list, tokens) {
             const container = document.getElementById('serpContainer');
             container.innerHTML = list.map((page) => {
@@ -877,19 +927,28 @@
             }).join('');
         }
 
+        // 修正點開網頁捲軸停在最底下的問題：先解除 hidden 顯示視窗後，再強制將捲軸歸零
         function openWebPage(pageId) {
             const page = webPages.find(p => p.id === pageId);
             if (!page) return;
             currentOpenPageId = pageId;
             logEvent('product_view', pageId, { title: page.title, sitename: page.sitename });
             document.getElementById('modalDomainText').innerText = 'https://' + page.url.replace(/\s*>\s*/g, '/');
+
             const contentEl = document.getElementById('modalContent');
             contentEl.innerHTML = page.content;
-            contentEl.scrollTop = 0;
+
             const modal = document.getElementById('documentModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.classList.add('modal-open');
+
+            contentEl.scrollTop = 0;
+            modal.scrollTop = 0;
+            requestAnimationFrame(() => {
+                contentEl.scrollTop = 0;
+                modal.scrollTop = 0;
+            });
         }
 
         function closeDocumentModal() {
