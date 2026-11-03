@@ -49,6 +49,33 @@
         .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
         .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typingBounce { 0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+   /* 📱 手機版 RWD 響應式優化 (不影響電腦版) */
+        body { height: 100dvh; }
+        @media (max-width: 640px) {
+            .modal-overlay { padding: 10px; }
+            .modal-card { padding: 20px 16px; border-radius: 14px; }
+            .modal-card h1 { font-size: 20px !important; }
+            .amber-box { padding: 12px 14px; font-size: 13px; margin-bottom: 14px; }
+            .top-bar { padding: 8px 12px; }
+            .top-bar-inner { gap: 6px; }
+            .mobile-collapsible-hint { display: none; width: 100%; padding-top: 6px; border-top: 1px solid #334155; font-size: 11px; line-height: 1.5; color: #e2e8f0; }
+            .mobile-collapsible-hint.open { display: block; }
+            .btn-toggle-hint { display: inline-flex !important; align-items: center; background-color: #334155; color: #f8fafc; font-weight: 600; padding: 4px 8px; border-radius: 4px; border: 1px solid #475569; font-size: 12px; cursor: pointer; }
+            .desktop-hint-text { display: none; }
+            .chat-history { padding: 14px 12px; gap: 14px; }
+            .bubble-user { max-width: 85%; font-size: 14px; padding: 8px 14px; }
+            .bubble-ai { max-width: 92%; font-size: 14px; padding: 10px 12px; }
+            .followup-bar { padding: 8px 12px; }
+            .followup-chips-wrap { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; padding-bottom: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .followup-chips-wrap::-webkit-scrollbar { display: none; }
+            .chip-btn { flex-shrink: 0; margin: 0; padding: 6px 12px; font-size: 12px; }
+            .input-bar { padding: 10px 12px; gap: 8px; }
+            .chat-input { font-size: 16px; padding: 10px 14px; } /* 16px 防止 iOS 自動放大畫面 */
+            .send-btn { padding: 10px 18px; font-size: 14px; }
+        }
+        @media (min-width: 641px) {
+            .btn-toggle-hint, .mobile-collapsible-hint { display: none !important; }
+        }
    </style>
 </head>
 <body>
@@ -83,21 +110,26 @@
         </div>
     </div>
 
-    <header class="top-bar">
+<header class="top-bar">
         <div class="top-bar-inner">
             <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px;">
-                <button onclick="reopenTaskModal()" class="btn-reopen-task">📋 查看任務說明</button>
-                <span>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>可連雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
+                <button onclick="reopenTaskModal()" class="btn-reopen-task">📋 任務說明</button>
+                <button onclick="document.getElementById('mobileHintDrawer').classList.toggle('open')" class="btn-toggle-hint">📌 條件與6款名單 &#9662;</button>
+                <span class="desktop-hint-text">預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>可連雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
             </div>
-            <button onclick="openFinalChoiceModal()" class="btn-submit-top">決定好了，提交最終選擇 &rarr;</button>
+            <button onclick="openFinalChoiceModal()" class="btn-submit-top">決定好了，提交選擇 &rarr;</button>
+            <div id="mobileHintDrawer" class="mobile-collapsible-hint">
+                <div><strong>📌 篩選條件：</strong>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>支援雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></div>
+                <div style="margin-top:4px; color:#fcd34d;"><strong>🎧 候選 6 款：</strong>① H20 Neonlite 2 ｜ ② Sooglur Pixel Buds Pro 4 ｜ ③ Guava Go Pods3 ｜ ④ JKT Live Beat 3 ｜ ⑤ Naiwa Buds Pro Wi-Fi ｜ ⑥ Tikkak-Audio X5</div>
+            </div>
         </div>
     </header>
 
     <main class="chat-main">
         <div id="chatContainer" class="chat-history"></div>
         <div id="followUpZone" class="followup-bar">
-            <div style="font-size:12px; color:#64748b; margin-bottom:6px; font-weight:600;">你也可以點選下方選項繼續查詢。</div>
-            <div>
+            <div style="font-size:12px; color:#64748b; margin-bottom:6px; font-weight:600;">你也可以點選下方選項繼續查詢（手機可左右滑動）：</div>
+            <div class="followup-chips-wrap">
                 <button onclick="handleChipClick('依單一條件篩選', '我想依條件篩選')" class="chip-btn">【依單一條件篩選】</button>
                 <button onclick="handleChipClick('比較兩款', '我想比較兩款')" class="chip-btn">【比較兩款】</button>
                 <button onclick="handleChipClick('依單一規格排序', '我想依單一規格排序')" class="chip-btn">【依單一規格排序】</button>
@@ -106,11 +138,6 @@
                 <button onclick="handleChipClick('解釋術語', '我想了解術語')" class="chip-btn">【解釋術語】</button>
             </div>
         </div>
-        <div class="input-bar">
-            <input id="chatInput" type="text" class="chat-input" placeholder="請輸入你想查詢的耳機規格或問題..." onkeypress="if(event.key === 'Enter') handleUserTyped()">
-            <button id="sendBtn" onclick="handleUserTyped()" class="send-btn">送出</button>
-        </div>
-    </main>
 
     <div id="choiceModal" class="modal-overlay hidden">
         <div class="choice-card">
