@@ -136,8 +136,13 @@
                 <button onclick="handleChipClick('查看單一產品規格', '我想看單一產品的規格')" class="chip-btn">【查看單一產品規格】</button>
                 <button onclick="handleChipClick('看產品照片', '我想看產品照片')" class="chip-btn">【看產品照片】</button>
                 <button onclick="handleChipClick('解釋術語', '我想了解術語')" class="chip-btn">【解釋術語】</button>
-            </div>
+             </div>
         </div>
+        <div class="input-bar">
+            <input id="chatInput" type="text" autocomplete="off" class="chat-input" placeholder="請輸入你想查詢的耳機規格或問題..." onkeypress="if(event.key === 'Enter') handleUserTyped()">
+            <button id="sendBtn" onclick="handleUserTyped()" class="send-btn">送出</button>
+        </div>
+    </main>
 
     <div id="choiceModal" class="modal-overlay hidden">
         <div class="choice-card">
@@ -437,42 +442,6 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             return GEMINI_MODELS;
         }
 
-// 精準取得純文字對話模型，排除 image / transcribe / robotics / computer-use / preview 舊版
-        async function getAvailableModels(activeKey) {
-            if (dynamicModelList) return dynamicModelList;
-            try {
-                const headers = {};
-                if (activeKey.startsWith('AQ.')) headers['x-goog-api-key'] = activeKey;
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(activeKey)}`, { headers });
-                if (res.ok) {
-                    const data = await res.json();
-                    const available = (data.models || [])
-                        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-                        .map(m => m.name.replace("models/", ""))
-                        // 嚴格排除非純文字生成模型與容易 404 的舊版實驗模型
-                        .filter(name => /^gemini/i.test(name) && !/image|vision|embedding|imagen|veo|tts|audio|transcribe|robotics|computer-use|thinking|exp|banana|argon|learnlm|001|002/i.test(name));
-
-                    if (available.length > 0) {
-                        // 優先順序：lite (最快最穩、最不易 503) > 正式版 flash > latest > pro
-                        const scoreModel = (n) => {
-                            if (n === "gemini-3.5-flash-lite" || n === "gemini-2.5-flash-lite") return 100;
-                            if (n.includes("flash-lite") && !n.includes("preview")) return 90;
-                            if ((n === "gemini-3.8-flash" || n === "gemini-3.6-flash" || n === "gemini-3.5-flash" || n === "gemini-2.5-flash") && !n.includes("preview")) return 85;
-                            if (n === "gemini-flash-lite-latest") return 80;
-                            if (n === "gemini-flash-latest") return 75;
-                            if (n.includes("flash") && !n.includes("preview")) return 70;
-                            if (n.includes("pro") && !n.includes("preview")) return 50;
-                            return 10;
-                        };
-                        available.sort((a, b) => scoreModel(b) - scoreModel(a));
-                        dynamicModelList = available;
-                        console.log("✅ [已篩選並排序最穩定的純文字對話模型]:", dynamicModelList);
-                        return dynamicModelList;
-                    }
-                }
-            } catch (e) {}
-            return GEMINI_MODELS;
-        }
 
         // 呼叫 Gemini API（含 503 伺服器忙碌自動重試 + Deliverable 12 自動檢查）
         async function askLearningAI(userQuery) {
