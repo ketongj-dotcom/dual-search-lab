@@ -179,7 +179,7 @@
 
             <!-- 右欄紅框處：兩塊直立式贊助廣告 -->
             <aside class="serp-right-col">
-                <a href="https://www.youtube.com/@rebelllleber" target="_blank" rel="noopener" onclick="logEvent('click_ad', 'sidebar_top_youtube_rebelllleber')" class="ad-card-yt">
+                <a href="https://www.youtube.com/@rebelllleber" target="_blank" rel="noopener" onclick="reportEvent('click_ad', 'sidebar_top_youtube_rebelllleber')" class="ad-card-yt">
                     <div class="p-4 flex items-center justify-between border-b border-white/10">
                         <span class="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded">贊助廣告 · YouTube</span>
                         <span class="text-xs text-slate-300">youtube.com</span>
@@ -195,7 +195,7 @@
                     </div>
                 </a>
 
-                <a href="https://www.instagram.com/reel/Da7_4nWTgL8/" target="_blank" rel="noopener" onclick="logEvent('click_ad', 'sidebar_bottom_ig_reel')" class="ad-card-ig">
+                <a href="https://www.instagram.com/reel/Da7_4nWTgL8/" target="_blank" rel="noopener" onclick="reportEvent('click_ad', 'sidebar_bottom_ig_reel')" class="ad-card-ig">
                     <div class="p-4 flex items-center justify-between border-b border-white/20">
                         <span class="bg-black/60 text-white text-[10px] font-black px-2 py-0.5 rounded">贊助廣告 · Instagram</span>
                         <span class="text-xs text-white">instagram.com</span>
@@ -261,34 +261,96 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script>
-        const API_BASE = 'http://localhost:3000/api';
-        let hasTaskStarted = false;
+        // Supabase backend integration. The public publishable key is safe for browser use.
+        const SUPABASE_URL = 'https://chetadmpaznljjmfhbmq.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_O4eiEj9gvZVX0Bk4c98HFw_NKOObKMz';
+        const eventClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+        const EVENT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/log-event`;
+        let hasTaskStarted = Boolean(localStorage.getItem('task_start_time'));
+        let isSubmittingChoice = false;
+        let backendReady = false;
 
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
+        // The participant and session MUST be created by index.html and Supabase.
+        // Never create random IDs here: they would not correspond to database records.
+        async function verifyExperimentSession() {
+            const participantId = localStorage.getItem('participant_id');
+            const sessionId = localStorage.getItem('session_id');
+            const condition = localStorage.getItem('condition');
+            const { data, error } = await eventClient.auth.getSession();
+            if (error || !data.session || !participantId || !sessionId || condition !== 'traditional') {
+                throw new Error('找不到有效的傳統組實驗身分，請從實驗入口 index.html 重新開始。');
+            }
+            const { data: info, error: infoError } = await eventClient.rpc('get_participant_info');
+            if (infoError || !Array.isArray(info) || !info.some(row => row.participant_id === participantId && row.condition === 'traditional')) {
+                throw new Error('受試者資料與目前登入身分不符，請聯絡研究人員。');
+            }
+            backendReady = true;
+            document.getElementById('introConfirmBtn').disabled = false;
+        }
+
+        async function requireSessionToken() {
+            if (!backendReady) throw new Error('實驗後端尚未準備完成。');
+            const { data, error } = await eventClient.auth.getSession();
+            if (error || !data.session) throw new Error('登入已失效，請聯絡研究人員。');
+            return data.session.access_token;
+        }
+
+        // Only event types allowed by the existing log-event Edge Function are sent.
+        // Additional UI interactions are retained visually but not logged yet.
+        const EVENT_TYPE_MAP = {
+            task_start: 'task_start',
+            search: 'search_submit',
+            product_view: 'product_view',
+            compare: 'comparison_view',
+            comparison_view: 'comparison_view',
+            submit_choice: 'final_choice_submit'
+        };
+        async function logEvent(eventType, targetId = null, metadata = {}) {
+            const mappedType = EVENT_TYPE_MAP[eventType];
+            if (!mappedType) return null;
+            const token = await requireSessionToken();
+            const response = await fetch(EVENT_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    session_id: localStorage.getItem('session_id'),
+                    event_type: mappedType,
+                    target_id: targetId,
+                    metadata
+                })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.error || `紀錄失敗 (${response.status})`);
+            console.log('✅ Supabase 行為紀錄成功:', mappedType, result);
+            return result;
+        }
+
+        function reportEvent(eventType, targetId, metadata = {}) {
+            void logEvent(eventType, targetId, metadata).catch(err => {
+                console.error('❌ 行為紀錄失敗:', eventType, err);
+                alert('行為紀錄未能儲存，請暫停操作並通知研究人員。');
             });
         }
 
-        if (!localStorage.getItem('participant_id')) localStorage.setItem('participant_id', 'U' + Math.floor(1000 + Math.random() * 9000));
-        if (!localStorage.getItem('session_id')) localStorage.setItem('session_id', generateUUID());
-        localStorage.setItem('condition', 'traditional');
-
-        async function logEvent(eventType, targetId, metadata = {}) {
-            const eventData = {
-                event_id: generateUUID(),
-                session_id: localStorage.getItem('session_id'),
-                participant_id: localStorage.getItem('participant_id'),
-                condition: 'traditional',
-                event_type: eventType,
-                target_id: targetId,
-                event_time: new Date().toISOString(),
-                metadata: metadata
-            };
-            console.log('📊 [API 傳送 -> log-event]:', eventData);
-            try { await fetch(`${API_BASE}/log-event`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(eventData) }); } catch (e) {}
+        async function initializeBackend() {
+            const startButton = document.getElementById('introConfirmBtn');
+            startButton.disabled = true;
+            try {
+                await verifyExperimentSession();
+                if (hasTaskStarted) {
+                    startButton.innerHTML = '關閉說明，回到畫面繼續找 &rarr;';
+                }
+            } catch (err) {
+                console.error('實驗身分驗證失敗:', err);
+                startButton.textContent = '無法開始：請聯絡研究人員';
+                alert(err.message);
+            }
         }
 
         function imgTag(file, cls) {
@@ -805,21 +867,29 @@
             }
         ];
 
-        function enterSearchEngine() {
+        async function enterSearchEngine() {
+            if (!backendReady) { alert('實驗尚未連接到 Supabase，請聯絡研究人員。'); return; }
+            if (!hasTaskStarted) {
+                try {
+                    await logEvent('task_start', 'enter_traditional_search');
+                } catch (err) {
+                    alert('開始時間無法儲存，請聯絡研究人員：' + err.message);
+                    return;
+                }
+            }
             document.getElementById('introScreen').classList.add('hidden');
             document.body.classList.remove('modal-open');
             if (!hasTaskStarted) {
                 hasTaskStarted = true;
                 localStorage.setItem('task_start_time', Date.now());
                 localStorage.setItem('started_at', new Date().toISOString());
-                logEvent('task_start', 'enter_traditional_search');
                 document.getElementById('introConfirmBtn').innerHTML = '關閉說明，回到畫面繼續找 &rarr;';
                 document.getElementById('heroSearchInput').focus();
             }
         }
 
         function reopenTaskModal() {
-            logEvent('reopen_task_instructions', 'top_left_button');
+            reportEvent('reopen_task_instructions', 'top_left_button');
             document.getElementById('introScreen').classList.remove('hidden');
             document.body.classList.add('modal-open');
         }
@@ -881,7 +951,7 @@
                 else adSection.classList.add('hidden');
             }
 
-            logEvent('search', rawQuery, { results_count: matched.length });
+            reportEvent('search', rawQuery, { results_count: matched.length });
 
             if (matched.length === 0) {
                 document.getElementById('searchStatus').innerHTML = `找不到符合「<strong>${rawQuery}</strong>」的網頁。`;
@@ -932,7 +1002,7 @@
             const page = webPages.find(p => p.id === pageId);
             if (!page) return;
             currentOpenPageId = pageId;
-            logEvent('product_view', pageId, { title: page.title, sitename: page.sitename });
+            reportEvent('product_view', pageId, { title: page.title, sitename: page.sitename });
             document.getElementById('modalDomainText').innerText = 'https://' + page.url.replace(/\s*>\s*/g, '/');
 
             const contentEl = document.getElementById('modalContent');
@@ -953,7 +1023,7 @@
 
         function closeDocumentModal() {
             if (currentOpenPageId) {
-                logEvent('close_modal', currentOpenPageId);
+                reportEvent('close_modal', currentOpenPageId);
                 currentOpenPageId = null;
             }
             const modal = document.getElementById('documentModal');
@@ -964,7 +1034,7 @@
         }
 
         function openFinalChoiceModal() {
-            logEvent('open_choice_modal', 'final_decision_button');
+            reportEvent('open_choice_modal', 'final_decision_button');
             document.getElementById('choiceModal').classList.remove('hidden');
             document.getElementById('choiceModal').classList.add('flex');
         }
@@ -975,12 +1045,12 @@
         }
 
         async function submitFinalChoice() {
+            if (isSubmittingChoice) return;
+            if (!backendReady) { alert('實驗後端尚未連線，請聯絡研究人員。'); return; }
             const selected = document.querySelector('input[name="finalProduct"]:checked');
             if (!selected) { alert('請先選擇一款耳機！'); return; }
-
             const choice = selected.value;
             const brandName = selected.getAttribute('data-brand');
-            const isCorrect = (choice === 'Model 03');
             const errorTypeMap = {
                 'Model 03': 'none_optimal',
                 'Model 01': 'preference_anc_battery_short',
@@ -989,45 +1059,47 @@
                 'Model 05': 'hard_constraint_ip_rating',
                 'Model 06': 'hard_constraint_price_and_ip'
             };
-
-            const startTime = Number(localStorage.getItem('task_start_time') || Date.now());
+            const startTime = Number(localStorage.getItem('task_start_time'));
+            if (!startTime) { alert('找不到開始時間，請聯絡研究人員。'); return; }
             const durationSec = Math.round((Date.now() - startTime) / 1000);
-
-            await logEvent('submit_choice', choice, {
-                brand_name: brandName,
-                error_type: errorTypeMap[choice],
-                duration_sec: durationSec
-            });
-
-            const finishPayload = {
-                session_id: localStorage.getItem('session_id'),
-                participant_id: localStorage.getItem('participant_id'),
-                condition: 'traditional',
-                ended_at: new Date().toISOString(),
-                final_choice: choice,
-                choice_correct: isCorrect,
-                duration_sec: durationSec,
-                status: 'completed'
-            };
-            console.log('✅ [API 傳送 -> finish-experiment]:', finishPayload);
-
+            const submitButton = document.querySelector('#choiceModal button[onclick="submitFinalChoice()"]');
+            isSubmittingChoice = true;
+            submitButton.disabled = true;
+            submitButton.textContent = '正在儲存，請稍候…';
             try {
-                await fetch(`${API_BASE}/finish-experiment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(finishPayload)
+                // Record the final decision before closing the session.
+                await logEvent('submit_choice', choice, {
+                    brand_name: brandName,
+                    error_type: errorTypeMap[choice],
+                    duration_sec: durationSec
                 });
-            } catch (e) {}
-
-            const pId = localStorage.getItem('participant_id') || 'U000';
-            const prefilledSurveyUrl = `https://docs.google.com/forms/d/e/1FAIpQLSfVb52zLqIn0T8FsV5o1hyJ-VkydwJHgii41-N_wWDVblkHWQ/viewform?usp=pp_url&entry.330827761=${encodeURIComponent(pId)}`;
-
-            alert(`🎉 產品選擇已成功送出！\n\n接下來將自動為您跳轉至簡短的後測問卷（系統已自動帶入您的受試者編號：${pId}），填寫完畢即完成整場實驗！`);
-            closeFinalChoiceModal();
-            window.location.href = prefilledSurveyUrl;
+                // Use the existing authenticated 2-argument RPC (not a localhost endpoint).
+                const { data, error } = await eventClient.rpc('complete_experiment', {
+                    p_session_id: localStorage.getItem('session_id'),
+                    p_final_choice: choice
+                });
+                if (error) throw error;
+                const completed = Array.isArray(data) ? data[0] : data;
+                if (!completed || completed.result_status !== 'completed') {
+                    throw new Error('實驗完成狀態未經後端確認。');
+                }
+                const pId = localStorage.getItem('participant_id');
+                const prefilledSurveyUrl = `https://docs.google.com/forms/d/e/1FAIpQLSfVb52zLqIn0T8FsV5o1hyJ-VkydwJHgii41-N_wWDVblkHWQ/viewform?usp=pp_url&entry.330827761=${encodeURIComponent(pId)}`;
+                alert(`🎉 產品選擇已成功送出！\n\n接下來將跳轉至後測問卷（已帶入受試者編號：${pId}）。`);
+                closeFinalChoiceModal();
+                window.location.href = prefilledSurveyUrl;
+            } catch (err) {
+                console.error('❌ 完成實驗失敗:', err);
+                alert('答案尚未確認成功儲存，暫時不會跳轉問卷。請聯絡研究人員：' + err.message);
+            } finally {
+                isSubmittingChoice = false;
+                submitButton.disabled = false;
+                submitButton.textContent = '確認送出答案';
+            }
         }
 
         document.body.classList.add('modal-open');
+        void initializeBackend();
     </script>
 </body>
 </html>
