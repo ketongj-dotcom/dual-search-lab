@@ -214,29 +214,20 @@
         </div>
     </main>
 
-    <!-- 網頁點擊後的彈出視窗（做法 A：移除紅黃綠假圓點改為返回按鈕 + 內建頂部任務條件與 6 款小抄） -->
+  <!-- 網頁點擊後的彈出視窗（只留乾淨的返回與網址列那一行，不擁擠） -->
     <div id="documentModal" class="hidden">
-        <div class="bg-slate-100 w-full max-w-5xl sm:rounded-2xl shadow-2xl relative flex flex-col overflow-hidden border border-slate-300 my-auto" style="height: 92vh;">
-            <div class="bg-slate-900 text-white px-4 py-2 text-xs flex flex-col gap-1 shrink-0">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span>📌 <strong>挑選條件：</strong>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>可連雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
-                    <button onclick="closeDocumentModal(); openFinalChoiceModal();" class="bg-emerald-500 text-white font-bold px-3 py-1 rounded text-xs cursor-pointer shrink-0">
-                        提交最終選擇 &rarr;
-                    </button>
-                </div>
-                <div class="text-[11px] text-slate-300">
-                    <span class="text-amber-300 font-bold">🎧 候選 6 款：</span>① H20 Neonlite 2 ｜ ② Sooglur Pixel Buds Pro 4 ｜ ③ Guava Go Pods3 ｜ ④ JKT Live Beat 3 ｜ ⑤ Naiwa Buds Pro Wi-Fi ｜ ⑥ Tikkak-Audio X5
-                </div>
-            </div>
-            <div class="bg-slate-200 border-b border-slate-300 px-4 py-2 flex justify-between items-center shrink-0">
+        <div class="bg-slate-100 w-full max-w-5xl sm:rounded-2xl shadow-2xl relative flex flex-col overflow-hidden border border-slate-300 my-auto" style="height: 94vh;">
+            <div class="bg-slate-200 border-b border-slate-300 px-3 py-2 flex justify-between items-center shrink-0">
                 <button onclick="closeDocumentModal()" class="bg-white text-slate-800 border border-slate-300 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1 cursor-pointer shrink-0 shadow-sm">
-                    &larr; 返回
+                    &larr; 返回搜尋結果
                 </button>
-                <div class="flex items-center gap-2 w-full max-w-md bg-white px-4 py-1.5 rounded-full border border-slate-300 text-xs text-slate-600 truncate shadow-inner mx-2">
+                <div class="flex items-center gap-1.5 flex-1 max-w-md bg-white px-3 py-1.5 rounded-full border border-slate-300 text-xs text-slate-600 truncate shadow-inner mx-2">
                     <span>🔒</span>
                     <span id="modalDomainText" class="truncate">https://example.com</span>
                 </div>
-                <div class="w-24"></div>
+                <button onclick="closeDocumentModal(); openFinalChoiceModal();" class="bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs cursor-pointer shrink-0 shadow-sm">
+                    提交選擇 &rarr;
+                </button>
             </div>
             <div id="modalContent" class="flex-1 bg-slate-100 overflow-y-auto"></div>
         </div>
@@ -353,60 +344,133 @@
             }
         }
 
+        // 強化版圖片載入器：支援 images/ 子目錄、根目錄、URL 編碼，若未部署圖檔則自動生成對應配色的精美耳機 SVG 圖示不破圖
+        function getFallbackEarbudSvg(file) {
+            const colorMap = { '黑': '#1e293b', '透明黑': '#334155', '白': '#f8fafc', '粉霧金': '#f5d0c5', '米': '#f5f5dc', '綠': '#86efac', '灰': '#94a3b8', '粉': '#f9a8d4', '藍': '#60a5fa', '銀': '#cbd5e1', '紫': '#c084fc' };
+            let fill = '#475569', label = file.replace('.png', '');
+            for (const [k, v] of Object.entries(colorMap)) { if (file.includes(k)) { fill = v; break; } }
+            const stroke = fill === '#f8fafc' || fill === '#f5f5dc' ? '#64748b' : '#ffffff';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240"><rect width="240" height="240" rx="24" fill="#f1f5f9"/><rect x="45" y="95" width="150" height="95" rx="36" fill="${fill}" stroke="#334155" stroke-width="5"/><line x1="45" y1="135" x2="195" y2="135" stroke="#334155" stroke-width="4"/><circle cx="90" cy="70" r="24" fill="${fill}" stroke="#334155" stroke-width="5"/><rect x="82" y="88" width="16" height="32" rx="8" fill="${fill}" stroke="#334155" stroke-width="4"/><circle cx="150" cy="70" r="24" fill="${fill}" stroke="#334155" stroke-width="5"/><rect x="142" y="88" width="16" height="32" rx="8" fill="${fill}" stroke="#334155" stroke-width="4"/><circle cx="120" cy="155" r="5" fill="#10b981"/><text x="120" y="218" font-family="sans-serif" font-size="14" font-weight="bold" fill="#334155" text-anchor="middle">${label}</text></svg>`;
+            return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+        }
+
+        // 產生高質感耳機商品 SVG 渲染圖（供無實體圖檔之雜訊耳機 Soli / Tecnick 或離線備援使用）
+        function getEarbudProductSvg(label, primaryColor = '#1e293b', accentColor = '#cbd5e1') {
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+                <defs>
+                    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f1f5f9"/></radialGradient>
+                </defs>
+                <rect width="300" height="300" rx="28" fill="url(#bgGrad)"/>
+                <ellipse cx="150" cy="248" rx="85" ry="12" fill="rgba(15,23,42,0.08)"/>
+                <rect x="65" y="125" width="170" height="105" rx="44" fill="${primaryColor}" stroke="#334155" stroke-width="4"/>
+                <path d="M 65 168 Q 150 178 235 168" fill="none" stroke="${accentColor}" stroke-width="3"/>
+                <rect x="132" y="163" width="36" height="8" rx="4" fill="${accentColor}"/>
+                <circle cx="150" cy="195" r="4.5" fill="#10b981"/>
+                <g transform="translate(-8, 0)">
+                    <ellipse cx="112" cy="88" rx="28" ry="24" fill="${primaryColor}" stroke="#334155" stroke-width="4"/>
+                    <circle cx="112" cy="88" r="12" fill="${accentColor}" opacity="0.6"/>
+                    <rect x="102" y="105" width="16" height="34" rx="8" fill="${primaryColor}" stroke="#334155" stroke-width="3"/>
+                </g>
+                <g transform="translate(8, 0)">
+                    <ellipse cx="188" cy="88" rx="28" ry="24" fill="${primaryColor}" stroke="#334155" stroke-width="4"/>
+                    <circle cx="188" cy="88" r="12" fill="${accentColor}" opacity="0.6"/>
+                    <rect x="182" y="105" width="16" height="34" rx="8" fill="${primaryColor}" stroke="#334155" stroke-width="3"/>
+                </g>
+                <text x="150" y="276" font-family="-apple-system, sans-serif" font-size="13" font-weight="bold" fill="#475569" text-anchor="middle">${label}</text>
+            </svg>`;
+            return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+        }
+
+        // 三重圖片防破圖載入器：1. 本地 encodeURI('./images/檔名') -> 2. GitHub 雲端直連圖床 -> 3. SVG 商品圖保底
         function imgTag(file, cls) {
-            return `<img src="images/${file}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${file}';}" class="${cls}">`;
+            const encodedFile = encodeURIComponent(file);
+            const githubRawUrl = `https://raw.githubusercontent.com/ketongj-dotcom/dual-search-lab/main/images/${encodedFile}`;
+            const fallbackSvg = getEarbudProductSvg(file.replace('.png', ''), '#334155', '#94a3b8');
+            return `<img src="./images/${encodedFile}" onerror="if(!this.dataset.f){this.dataset.f='1';this.src='${githubRawUrl}';}else if(this.dataset.f==='1'){this.dataset.f='2';this.src='${file}';}else{this.onerror=null;this.src='${fallbackSvg}';}" class="${cls}">`;
+        }
+
+        // 產品照片左右滑動與縮圖切換控制函式
+        function slideProductGallery(dir) {
+            const track = document.getElementById('productGalleryTrack');
+            if (!track) return;
+            track.scrollBy({ left: dir * track.clientWidth, behavior: 'smooth' });
+        }
+        function jumpProductGallery(index) {
+            const track = document.getElementById('productGalleryTrack');
+            if (!track) return;
+            track.scrollTo({ left: index * track.clientWidth, behavior: 'smooth' });
+        }
+        function updateGalleryCounter(el) {
+            const idx = Math.round(el.scrollLeft / (el.clientWidth || 1)) + 1;
+            const total = el.children.length;
+            const badge = document.getElementById('galleryIndexBadge');
+            if (badge) badge.textContent = `${idx}/${total}`;
         }
 
         // =========================================================================
-        // 🛍️ 全平台超豐富電商商品頁生成引擎 (已將過期日期改為中性現貨到貨說明)
+        // 🛍️ 全平台電商商品頁生成引擎 (已移除頂部購物導覽列，並支援全商品照片左右滑動輪播)
         // =========================================================================
         function buildRichStorePage(cfg) {
-            const mainVisual = cfg.mainImg
-                ? imgTag(cfg.mainImg, 'w-48 h-48 object-contain mb-2')
-                : `<div class="text-6xl mb-4">${cfg.emoji || '🎧'}</div>`;
+            const colorNames = cfg.colors ? cfg.colors.split('、') : ['標準色'];
+            const galleryFiles = (cfg.thumbs && cfg.thumbs.length > 0) ? cfg.thumbs : (cfg.mainImg ? [cfg.mainImg] : []);
 
-            const thumbsHtml = (cfg.thumbs && cfg.thumbs.length > 0)
-                ? `<div class="flex gap-2 my-2">${cfg.thumbs.map(t => imgTag(t, 'w-10 h-10 object-contain border rounded bg-white p-0.5 shadow-sm')).join('')}</div>`
+            let slidesContent = '';
+            let totalSlides = 1;
+            if (galleryFiles.length > 0) {
+                totalSlides = galleryFiles.length;
+                slidesContent = galleryFiles.map((f, i) => `
+                    <div style="flex:0 0 100%; scroll-snap-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; user-select:none;">
+                        ${imgTag(f, 'w-48 h-48 object-contain')}
+                        <span class="text-xs font-bold text-slate-600 mt-1">${colorNames[i] ? `${cfg.brandName}｜${colorNames[i]}` : cfg.brandName}</span>
+                    </div>
+                `).join('');
+            } else {
+                // 針對 Soli 與 Tecnick 兩款無實體圖檔之商品，依配色生成可左右滑動的雙色耳機商品圖
+                totalSlides = colorNames.length;
+                slidesContent = colorNames.map((cName) => {
+                    const isLight = cName.includes('銀') || cName.includes('白');
+                    const svgSrc = getEarbudProductSvg(`${cfg.brandName}｜${cName}`, isLight ? '#e2e8f0' : '#1e293b', isLight ? '#64748b' : '#d4af37');
+                    return `
+                        <div style="flex:0 0 100%; scroll-snap-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; user-select:none;">
+                            <img src="${svgSrc}" class="w-48 h-48 object-contain">
+                            <span class="text-xs font-bold text-slate-600 mt-1">${cfg.brandName}｜${cName}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const arrowsHtml = totalSlides > 1
+                ? `<button type="button" onclick="slideProductGallery(-1)" style="position:absolute; left:10px; top:46%; transform:translateY(-50%); background:rgba(15,23,42,0.55); color:#fff; width:34px; height:34px; border-radius:999px; font-weight:bold; font-size:18px; display:flex; align-items:center; justify-content:center; z-index:10; cursor:pointer;">&lsaquo;</button>
+                   <button type="button" onclick="slideProductGallery(1)" style="position:absolute; right:10px; top:46%; transform:translateY(-50%); background:rgba(15,23,42,0.55); color:#fff; width:34px; height:34px; border-radius:999px; font-weight:bold; font-size:18px; display:flex; align-items:center; justify-content:center; z-index:10; cursor:pointer;">&rsaquo;</button>`
                 : '';
+
+            const thumbsBarHtml = galleryFiles.length > 1
+                ? `<div class="flex justify-center gap-2 py-2 bg-slate-50 border-t border-slate-100">
+                    ${galleryFiles.map((t, i) => `<div onclick="jumpProductGallery(${i})" class="cursor-pointer border-2 border-slate-200 hover:border-purple-600 rounded-lg bg-white p-0.5 shadow-sm">${imgTag(t, 'w-10 h-10 object-contain')}</div>`).join('')}
+                   </div>`
+                : '';
+
+            const mainVisual = galleryFiles.length > 0
+                ? imgTag(galleryFiles[0], 'w-36 h-36 object-contain')
+                : `<img src="${getEarbudProductSvg(cfg.brandName, '#1e293b', '#d4af37')}" class="w-36 h-36 object-contain">`;
 
             return `
                 <div class="mobile-frame text-slate-800 pb-0">
-                    <!-- 1. 頂部平台導覽列 + 5 大分頁籤 -->
-                    <div class="sticky top-0 bg-white z-40 border-b border-gray-200">
-                        <div class="flex items-center px-3 py-2 gap-2">
-                            <span class="text-gray-500 text-xl font-light cursor-pointer" onclick="closeDocumentModal()">&lsaquo;</span>
-                            <span class="text-gray-500 text-lg cursor-pointer">&#9776;</span>
-                            <div class="flex items-center gap-1">
-                                <span class="font-black text-base tracking-tighter leading-none" style="color:${cfg.themeColor};">${cfg.platformShort}</span>
-                                <span class="bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">${cfg.badgeText}</span>
-                            </div>
-                            <div class="flex-1 border rounded-full px-3 py-1 text-xs text-gray-500 bg-gray-50 flex items-center justify-between" style="border-color:${cfg.themeColor};">
-                                <span class="truncate">${cfg.brandName}</span>
-                            </div>
-                            <span class="text-gray-400 text-base">🕒</span>
-                        </div>
-                        <div class="grid grid-cols-5 text-center text-xs font-medium text-gray-600 border-t border-gray-100">
-                            <div class="py-2 border-b-2 font-bold" style="border-color:${cfg.themeColor}; color:${cfg.themeColor};">商品</div>
-                            <div class="py-2">評價</div>
-                            <div class="py-2">詳情</div>
-                            <div class="py-2">規格</div>
-                            <div class="py-2">推薦</div>
-                        </div>
-                    </div>
-
-                    <!-- 2. 主視覺圖片區 + 官方授權紅金橫幅 -->
+                    <!-- 主視覺可左右滑動圖片區（已移除頂部擁擠的購物搜尋列與分頁籤） -->
                     <div class="bg-white relative">
-                        <div class="p-5 flex flex-col items-center justify-center aspect-square bg-slate-50 relative">
-                            <div class="absolute top-3 left-4 flex items-center gap-1.5">
-                                <div class="w-7 h-7 rounded-full text-white flex items-center justify-center font-black text-xs" style="background:${cfg.themeColor};">${cfg.code}</div>
-                                <span class="font-black tracking-widest text-slate-700 text-xs">${cfg.brandName}</span>
+                        <div class="pt-8 pb-3 flex flex-col items-center justify-center bg-slate-50 relative">
+                            <div class="absolute top-2.5 left-3.5 flex items-center gap-1.5 z-10">
+                                <div class="w-6 h-6 rounded-full text-white flex items-center justify-center font-black text-[11px]" style="background:${cfg.themeColor};">${cfg.code}</div>
+                                <span class="font-black tracking-wide text-slate-700 text-xs">${cfg.brandName}</span>
                             </div>
-                            ${mainVisual}
-                            ${thumbsHtml}
-                            <div class="text-xs text-slate-500 mt-1">可選配色：${cfg.colors}</div>
-                            <span class="absolute bottom-14 right-0 bg-stone-600 text-white text-xs px-2.5 py-1 rounded-l-md">官方正品</span>
-                            <span class="absolute bottom-3 right-3 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">1/${(cfg.thumbs && cfg.thumbs.length) || 5}</span>
+                            ${arrowsHtml}
+                            <div id="productGalleryTrack" onscroll="updateGalleryCounter(this)" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; width:100%; height:235px;">
+                                ${slidesContent}
+                            </div>
+                            <div class="text-[11px] text-slate-400 mt-0.5">👆 可左右滑動或點選箭頭切換配色照片（共 ${totalSlides} 色：${cfg.colors}）</div>
+                            <span id="galleryIndexBadge" class="absolute bottom-3 right-3 bg-black/60 text-white text-[10px] px-2.5 py-0.5 rounded-full">1/${totalSlides}</span>
                         </div>
+                        ${thumbsBarHtml}
                         <div class="flex items-center bg-amber-50 border-y border-amber-200">
                             <div class="bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-r-full shrink-0">官方授權</div>
                             <div class="px-3 text-xs font-extrabold text-slate-900 truncate">獨家滿額送 <span class="text-red-600 italic text-sm">10%</span> 限量回饋！</div>
