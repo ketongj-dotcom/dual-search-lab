@@ -56,66 +56,87 @@
 </head>
 <body class="bg-white text-slate-800 min-h-screen flex flex-col">
 
-    <!-- 階段一：實驗任務說明彈窗 (精簡好讀版 + 6款耳機一行一款清楚呈現) -->
+    <!-- 四頁式小說短劇任務說明彈窗 (傳統搜尋組乾淨同色調版) -->
     <div id="introScreen">
         <div class="max-w-2xl w-full bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-200 my-auto">
-            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full inline-block">實驗任務說明</span>
-            <h1 class="text-2xl font-bold text-slate-900 mt-2 mb-2">幫自己挑一副最合適的藍牙耳機</h1>
-            <p class="text-sm text-slate-600 mb-3 leading-relaxed">
-                你是一位平日搭捷運通勤、週末會去戶外慢跑運動的上班族。請<strong>想像你平常在 Google 搜尋產品一樣</strong>，自己輸入關鍵字查找資料，從以下 <strong>6 款候選耳機</strong> 中挑出最符合需求的一款：
-            </p>
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4 text-xs sm:text-sm text-slate-800">
-                <div class="font-bold text-purple-700 mb-2">🎧 可選擇的候選耳機款式（共 6 款，請從這 6 款中六選一）：</div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 font-medium">
-                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">1. <strong>H20 Neonlite 2</strong></div>
-                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">2. <strong>Sooglur Pixel Buds Pro 4</strong></div>
-                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">3. <strong>Guava Go Pods3</strong></div>
-                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">4. <strong>JKT Live Beat 3</strong></div>
-                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">5. <strong>Naiwa Buds Pro Wi-Fi</strong></div>
-                    <div class="bg-white px-3 py-1.5 rounded border border-slate-200">6. <strong>Tikkak-Audio X5</strong></div>
+            <!-- 頂部僅保留乾淨的頁碼與同色調進度點 -->
+            <div class="flex items-center justify-end mb-3.5">
+                <div class="flex items-center gap-1.5">
+                    <span id="storyPageIndicator" class="text-xs font-bold text-slate-500 mr-1">1 / 4</span>
+                    <span id="dot1" style="width:20px; height:6px; border-radius:99px; background:#7e22ce; transition:all 0.2s;"></span>
+                    <span id="dot2" style="width:8px; height:6px; border-radius:99px; background:#cbd5e1; transition:all 0.2s;"></span>
+                    <span id="dot3" style="width:8px; height:6px; border-radius:99px; background:#cbd5e1; transition:all 0.2s;"></span>
+                    <span id="dot4" style="width:8px; height:6px; border-radius:99px; background:#cbd5e1; transition:all 0.2s;"></span>
                 </div>
             </div>
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm space-y-3">
-                <div class="border-b border-amber-200 pb-2.5">
-                    <p class="font-bold text-red-600 mb-1.5">🚫 三大基本硬性需求（只要有一項不合，就淘汰不考慮）：</p>
-                    <ul class="list-disc list-inside text-slate-700 space-y-1">
-                        <li><strong>預算上限：</strong> 價格在 <strong>NT$7,500（含）以內</strong>。</li>
-                        <li><strong>防塵防水：</strong> 防護等級至少達 <strong>IP54 或更高</strong>（若只有 <strong>IPX4</strong> 無防塵則淘汰）。</li>
-                        <li><strong>多點連線：</strong> 必須支援 <strong>「雙裝置連線（多點連線）」</strong>（同時連電腦與手機）。</li>
-                    </ul>
-                </div>
-                <div class="pt-0.5">
-                    <p class="font-bold text-blue-700 mb-1.5">⚖️ 若有多款同時符合上述三項需求，請依序比較：</p>
-                    <ol class="list-decimal list-inside text-slate-700 space-y-1">
-                        <li><strong>先比「開啟降噪（ANC）的單次續航時間」：</strong> 一次充電能聽越久的越優先。</li>
-                        <li><strong>再比「價格與重量」：</strong> 若開降噪單次續航相同，選 <strong>價格較便宜划算</strong> 的那款（若價格又相同，再選單耳重量較輕的）。</li>
-                    </ol>
-                </div>
+
+            <!-- 第 1 頁 -->
+            <div id="storyStep1" style="font-size:15px; line-height:1.85; color:#1e293b; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+                <p style="margin:0 0 14px 0;">週五下午五點半，距離下班只剩三十分鐘。</p>
+                <p style="margin:0 0 14px 0;">你正盯著螢幕上的報表，盤算著待會搭捷運去哪吃晚餐。突然，身後傳來一陣急促沉重的皮鞋聲——「扣、扣、扣」。</p>
+                <p style="margin:0 0 14px 0;">你心頭一緊，猛地抬頭。是人稱「大魔王」的業務處高副總。</p>
+                <p style="margin:0 0 14px 0;">「聽著，下週一我要出差去東京，但我的耳機剛好壞了。」高副總低頭看了看手錶，眼神銳利地射向你：「我假日要去戶外慢跑，平常搭捷運要處理公事，我需要一副全新的藍牙耳機。聽清楚我的條件，我只講一次：」</p>
+                <p style="margin:0;">你趕緊抓起手邊的原子筆，手心微微冒汗。</p>
             </div>
-            <button id="introConfirmBtn" onclick="enterSearchEngine()" class="w-full bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md cursor-pointer text-base">
-                我了解挑選條件了，開始搜尋 &rarr;
-            </button>
+
+            <!-- 第 2 頁 -->
+            <div id="storyStep2" class="hidden" style="font-size:15px; line-height:1.85; color:#1e293b; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+                <p style="margin:0 0 14px 0;">「候選名單我已經叫秘書發到系統裡了，就只有這 6 款能挑：<br>
+                <strong>H20 Neonlite 2、Sooglur Pixel Buds Pro 4、Guava Go Pods3、JKT Live Beat 3、Naiwa Buds Pro Wi-Fi、還有 Tikkak-Audio X5。</strong>」</p>
+                <p style="margin:0 0 12px 0;">「首先有三項一定要符合的需求，只要有一項不合，直接淘汰不用看：</p>
+                <p style="margin:0 0 10px 0;"><strong>1.預算上限：</strong>公司這次差旅娛樂雜支上限是 <strong>NT$7,500（含）</strong>，超過一塊錢都不准報！</p>
+                <p style="margin:0 0 10px 0;"><strong>2.防塵防水：</strong>我週末慢跑流汗多、東京又容易下雨，等級必須達到 <strong>IP54（含）以上</strong>！那種只有防潑水防汗的 IPX4 垃圾，一律刷掉！</p>
+                <p style="margin:0;"><strong>3.多點連線：</strong>我上班要邊用筆電開會、邊用手機接電話，必須支援<strong>雙裝置連線（多點連線）</strong>，不能無縫切換的直接丟垃圾桶！」</p>
+            </div>
+
+            <!-- 第 3 頁 -->
+            <div id="storyStep3" class="hidden" style="font-size:15px; line-height:1.85; color:#1e293b; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+                <p style="margin:0 0 14px 0;">高副總停頓了一下，眼神如鷹隼般盯著你，敲了敲桌子：</p>
+                <p style="margin:0 0 14px 0;">「要是符合這三點的耳機不只一款，就給我按照以下順序嚴格依序比較，前面有分出勝負就停，平手才能看下一項：</p>
+                <p style="margin:0 0 12px 0;"><strong>【第一順位｜降噪續航】：</strong>比『開啟主動降噪（ANC）的單次續航時數』。我搭長途飛機跟通勤都要開降噪，單次能撐越久的越優先！只要誰續航最長，誰就直接勝出！</p>
+                <p style="margin:0 0 12px 0;"><strong>【第二順位｜價格划算】：</strong>萬一有兩款以上『開啟降噪的單次續航剛好一模一樣長』，這時候才看價格！替公司精打細算，選售價較便宜划算的那一款！</p>
+                <p style="margin:0 0 14px 0;"><strong>【第三順位｜機身重量】：</strong>萬一連『降噪續航』跟『售價』都完全一模一樣，最後才比重量！挑單耳重量較輕的，我耳朵怕脹！」</p>
+                <p style="margin:0;">說完，副總抬手敲了敲你的辦公桌桌面，發出「咚咚」的沉悶響聲。</p>
+            </div>
+
+            <!-- 第 4 頁 -->
+            <div id="storyStep4" class="hidden" style="font-size:15px; line-height:1.85; color:#1e293b; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+                <p style="margin:0 0 12px 0;">「下班前把最符合的那一款型號交給我。要是挑錯、或是讓我買到不合條件的垃圾——」副總扯了扯嘴角，露出皮笑肉不笑的表情：<br>
+                「實習考核表上，我就直接勾『不適任』，下週一你也不用來了，直接打包走人。聽懂了嗎？」</p>
+                <p style="margin:0 0 12px 0;">「聽……聽懂了，副總，我馬上處理！」</p>
+                <p style="margin:0 0 12px 0;">你坐回椅子上，背脊全被冷汗浸濕。心中一陣狂飆問候，但想到實習合約與學分，只能敢怒不敢言地咬緊牙關。</p>
+                <p style="margin:0 0 12px 0;">你深吸一口氣，立刻移動滑鼠，點開瀏覽器分頁，火速在搜尋框輸入：Yaho搜尋引擎。</p>
+                <p style="margin:0 0 12px 0;"><strong>「好……下班前是吧？7,500以內、IP54防塵防水、多點連線；先比開降噪單次續航，續航平手才比價格，價格再平手才比單耳重量……」</strong></p>
+                <p style="margin:0;">你的手指在鍵盤上飛快敲擊，爭分奪秒地開始逐一調查這 6 款耳機的詳細規格底細——</p>
+            </div>
+
+            <!-- 底部翻頁按鈕區 -->
+            <div class="flex gap-3 mt-5">
+                <button id="storyPrevBtn" onclick="changeStoryPage(-1)" class="hidden flex-1 bg-slate-100 text-slate-700 font-bold py-3 px-4 rounded-xl border border-slate-300 cursor-pointer text-sm">
+                    &larr; 上一頁
+                </button>
+                <button id="storyNextBtn" onclick="changeStoryPage(1)" class="flex-1 bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md cursor-pointer text-base">
+                    下一頁 &rarr;
+                </button>
+                <button id="introConfirmBtn" onclick="enterSearchEngine()" class="hidden flex-1 bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md cursor-pointer text-base">
+                    開始搜尋 &rarr;
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- 頂部常駐任務小抄列（方案一：含 6 款候選耳機名單與挑選條件） -->
-    <header class="bg-slate-900 text-white py-2 px-4 sm:px-6 sticky top-0 z-30 shadow-md">
-        <div class="max-w-6xl mx-auto flex flex-col gap-1.5 text-xs">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <div class="flex flex-wrap items-center gap-2">
-                    <button onclick="reopenTaskModal()" class="bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded cursor-pointer flex items-center gap-1 shadow-sm">
-                        📋 查看任務說明
-                    </button>
-                    <span><strong>條件：</strong>預算 <strong>&le; $7,500</strong> ｜ 防護 <strong>&ge; IP54 (非IPX4)</strong> ｜ <strong>支援雙裝置(多點連線)</strong> ｜ <strong>先比ANC單次續航，再比誰便宜</strong></span>
-                </div>
-                <button onclick="openFinalChoiceModal()" class="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs">
-                    決定好了，提交最終選擇 &rarr;
+    <!-- 頂部常駐任務定義提醒列 -->
+    <header class="bg-slate-900 text-white py-2.5 px-4 sm:px-6 sticky top-0 z-30 shadow-md">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="reopenTaskModal()" class="bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded cursor-pointer flex items-center gap-1 shadow-sm">
+                    📋 查看任務說明
                 </button>
+                <span><strong>7,500塊以內、IP54防塵防水、多點連線；先比開降噪單次續航，續航平手才比價格，價格再平手才比單耳重量</strong></span>
             </div>
-            <div class="text-[11px] text-slate-300 border-t border-slate-700 pt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                <span class="text-amber-300 font-bold">🎧 候選 6 款（六選一）：</span>
-                <span>① H20 Neonlite 2</span>｜<span>② Sooglur Pixel Buds Pro 4</span>｜<span>③ Guava Go Pods3</span>｜<span>④ JKT Live Beat 3</span>｜<span>⑤ Naiwa Buds Pro Wi-Fi</span>｜<span>⑥ Tikkak-Audio X5</span>
-            </div>
+            <button onclick="openFinalChoiceModal()" class="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs">
+                決定好了，提交最終選擇 &rarr;
+            </button>
         </div>
     </header>
 
@@ -259,7 +280,7 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_O4eiEj9gvZVX0Bk4c98HFw_NKOObKMz';
         const eventClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
         const EVENT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/log-event`;
-        let hasTaskStarted = Boolean(localStorage.getItem('task_start_time'));
+        let hasTaskStarted = false;
         let isSubmittingChoice = false;
         let backendReady = false;
 
@@ -930,6 +951,38 @@
                 content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-white border-b px-6 py-3 flex justify-between text-xs text-slate-500 font-bold"><span>MENU</span><span>HOME &gt; BLOG &gt; BACK</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-2"><div class="text-xs font-bold text-slate-500">挑選指南 · 續航實測專題</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">五款無線耳機續航評比與選購推薦</h1><div class="text-sm font-bold text-sky-700">別讓耳機比你先下班 通勤與長時間外出的選購指南</div><p class="text-xs sm:text-sm text-slate-700 leading-relaxed">這次讓 <strong>Tecnick EAH-AZ100、H20 Neonlite 2、Soli WF-1000XM5、Naiwa Buds Pro Wi-Fi、Guava Go Pods3</strong> 一起登場，比較單次播放、充電盒補電與快充。平常會開 ANC，就優先看降噪開啟的數字！</p></section><hr><section class="space-y-4 text-xs sm:text-sm"><div class="p-3 bg-slate-50 rounded-lg border"><strong>1. Tecnick EAH-AZ100：</strong>AAC 模式開啟 ANC 單次約 10 小時、關閉 ANC 約 12 小時；快充 15 分鐘可用約 90 分鐘。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>2. H20 Neonlite 2（通勤分段聽）：</strong>ANC 單次續航<strong>約 6 小時</strong>，關閉 ANC 約 7.5 小時；快充 10 分鐘可用 2.5 小時，含盒最高 26 小時。若常常「一戴就不想停」，應把單次續航放在更前面比較。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>3. Soli WF-1000XM5：</strong>AAC/SBC 開啟 ANC 最長 8 小時，關閉降噪最長 12 小時；快充 3 分鐘播 1 小時。</div><div class="p-3 bg-slate-50 rounded-lg border"><strong>4. Naiwa Buds Pro Wi-Fi：</strong>標示 ANC 開啟<strong>約 10 小時</strong>，關閉約 14 小時，含盒最高 38 小時。<br><span class="text-red-600 font-bold">⚠️ 規格觀察：它標示的 IPX4 並不符合 IP54 以上的防塵防潑水條件；若戶外需求包含防塵，仍得把防護規格一起看。</span></div><div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200"><strong>5. Guava Go Pods3（讓歌單多陪你一段路）：</strong>開啟 ANC <strong>約可聽 8 小時</strong>，關閉 ANC 約 11 小時，含盒最高 28 小時。相較 H20 Neonlite 2 多出約 2 小時的 ANC 單次續航，讓較長行程多些餘裕！</div></section><h3 class="text-base font-black text-sky-700 text-center pt-2">五款耳機續航比較表</h3><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>產品</th><th>ANC 開啟單次</th><th>ANC 關閉單次</th><th>快充標示</th></tr></thead><tbody><tr><td>Tecnick EAH-AZ100</td><td>約 10 小時</td><td>約 12 小時</td><td>至少 15 分鐘 &rarr; 約 90 分鐘</td></tr><tr><td class="font-bold">H20 Neonlite 2</td><td>約 6 小時</td><td>約 7.5 小時</td><td>10 分鐘 &rarr; 2.5 小時</td></tr><tr><td>Soli WF-1000XM5</td><td>最長 8 小時</td><td>最長 12 小時</td><td>3 分鐘 &rarr; 約 1 小時</td></tr><tr><td class="font-bold">Naiwa Buds Pro Wi-Fi</td><td>約 10 小時 (僅IPX4)</td><td>約 14 小時</td><td>10 分鐘 &rarr; 3 小時</td></tr><tr class="bg-emerald-50 font-bold"><td>Guava Go Pods3</td><td>約 8 小時</td><td>約 11 小時</td><td>10 分鐘 &rarr; 1 小時</td></tr></tbody></table></article></div>`
             }
         ];
+
+        let currentStoryPage = 1;
+        function changeStoryPage(delta) {
+            currentStoryPage = Math.min(4, Math.max(1, currentStoryPage + delta));
+            for (let i = 1; i <= 4; i++) {
+                const stepEl = document.getElementById('storyStep' + i);
+                const dotEl = document.getElementById('dot' + i);
+                if (stepEl) {
+                    if (i === currentStoryPage) stepEl.classList.remove('hidden');
+                    else stepEl.classList.add('hidden');
+                }
+                if (dotEl) {
+                    dotEl.style.width = (i === currentStoryPage) ? '20px' : '8px';
+                    dotEl.style.background = (i <= currentStoryPage) ? '#7e22ce' : '#cbd5e1';
+                }
+            }
+            document.getElementById('storyPageIndicator').textContent = `${currentStoryPage} / 4`;
+            const prevBtn = document.getElementById('storyPrevBtn');
+            const nextBtn = document.getElementById('storyNextBtn');
+            const confirmBtn = document.getElementById('introConfirmBtn');
+
+            if (currentStoryPage === 1) prevBtn.classList.add('hidden');
+            else prevBtn.classList.remove('hidden');
+
+            if (currentStoryPage === 4) {
+                nextBtn.classList.add('hidden');
+                confirmBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                confirmBtn.classList.add('hidden');
+            }
+        }
 
         async function enterSearchEngine() {
             if (!backendReady) { alert('實驗尚未連接到 Supabase，請聯絡研究人員。'); return; }
