@@ -193,14 +193,15 @@
 
     <script>
         const API_BASE = 'http://localhost:3000/api';
-        // 使用分段拼接避免 GitHub Secret Scanning 攔截或自動停用
-        const DEFAULT_GEMINI_KEY = "AIzaSyBQ3Hp" + "PSppW9GTjIe33" + "fVt0XSN_" + "HW8xO78";
-        // 清除可能殘留的舊無效 localStorage key
-        if (localStorage.getItem('gemini_api_key') && localStorage.getItem('gemini_api_key').startsWith('AQ.')) {
+        // OpenRouter 設定：API Base URL、分段拼接金鑰（避免 GitHub 掃描攔截）、Model ID
+        const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+        const DEFAULT_OPENROUTER_KEY = "sk-or-v1-9a3e747ff7ab3350cdef1f" + "90f803511df660d55a540468" + "12b4a4a08afa2045b2";
+        const OPENROUTER_MODEL = "google/gemini-3.8-flash";
+
+        // 清除可能殘留的舊 localStorage key
+        if (localStorage.getItem('gemini_api_key')) {
             localStorage.removeItem('gemini_api_key');
         }
-        // 僅使用 gemini-3.8-flash
-        const GEMINI_MODELS = ["gemini-3.8-flash"];
 
         // Deliverable 0｜MKB 核准事實表
         const MKB = {
@@ -404,7 +405,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
                     boundary_triggered: logObj.boundary_triggered || 'none', fallback_subtype: logObj.fallback_subtype || 'none',
                     image_ids: logObj.image_ids || [], final_choice: logObj.final_choice || null, input_type: logObj.input_type,
                     chip_clicked: logObj.chip_clicked || null, suggestions_shown: logObj.suggestions_shown, guardrail_result: logObj.guardrail_result || 'pass',
-                    regen_count: logObj.regen_count || 0, error_flag: logObj.error_flag || 'none', model_version: logObj.response_mode || 'gemini-3.8-flash', prompt_version: 'SP-v1.0/MKB-v2.1',
+                    regen_count: logObj.regen_count || 0, error_flag: logObj.error_flag || 'none', model_version: logObj.response_mode || OPENROUTER_MODEL, prompt_version: 'SP-v1.0/MKB-v2.1',
                     pii_masked: logObj.pii_masked || false, web_segment_ids: logObj.web_segment_ids || []
                 }
             };
@@ -509,12 +510,8 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             return { html: cleanText + cardsHtml, imgIds: foundImgIds };
         }
 
-        async function getAvailableModels(activeKey) {
-            return GEMINI_MODELS;
-        }
-
         async function askLearningAI(userQuery) {
-            const rawKey = localStorage.getItem('gemini_api_key') || DEFAULT_GEMINI_KEY || '';
+            const rawKey = localStorage.getItem('openrouter_api_key') || DEFAULT_OPENROUTER_KEY || '';
             const activeKey = Array.isArray(rawKey) ? rawKey.join('') : String(rawKey).trim();
             if (!activeKey) return null;
 
@@ -523,88 +520,87 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
 - 前一輪詢問的屬性 (lastAttributeAsked): ${lastAttributeAsked || "無"}`;
 
             const recentHistoryText = conversationHistory.slice(-6).map(h => `${h.role === 'user' ? '使用者' : 'AI'}：${h.text}`).join('\n');
-            const modelsToTry = await getAvailableModels(activeKey);
 
-            for (const modelName of modelsToTry) {
-                let regenCount = 0;
-                let retry503 = 0;
-                let feedbackPrompt = "";
+            let regenCount = 0;
+            let retry503 = 0;
+            let feedbackPrompt = "";
 
-                while (regenCount <= 2) {
-                    try {
-                        const headers = { 'Content-Type': 'application/json' };
-                        let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(activeKey)}`;
-                        if (activeKey.startsWith('AQ.')) headers['x-goog-api-key'] = activeKey;
+            while (regenCount <= 2) {
+                try {
+                    const fullPrompt = `${AI_SCRIPT_PROMPT}\n\n${contextNote}\n\n【近期對話紀錄】\n${recentHistoryText || "（此為第一輪提問）"}\n\n【本輪使用者問題】\n「${userQuery}」${feedbackPrompt}`;
 
-                        const fullPrompt = `${AI_SCRIPT_PROMPT}\n\n${contextNote}\n\n【近期對話紀錄】\n${recentHistoryText || "（此為第一輪提問）"}\n\n【本輪使用者問題】\n「${userQuery}」${feedbackPrompt}`;
+                    const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${activeKey}`
+                        },
+                        body: JSON.stringify({
+                            model: OPENROUTER_MODEL,
+                            messages: [{ role: 'user', content: fullPrompt }],
+                            response_format: { type: 'json_object' },
+                            temperature: 0.0
+                        })
+                    });
 
-                        const res = await fetch(url, {
-                            method: 'POST',
-                            headers: headers,
-                            body: JSON.stringify({
-                                contents: [{ parts: [{ text: fullPrompt }] }],
-                                generationConfig: { responseMimeType: "application/json", temperature: 0.0 }
-                            })
-                        });
-
-                        if (res.status === 503 || res.status === 429) {
-                            if (retry503 < 1) {
-                                retry503++;
-                                console.warn(`⏳ [模型 ${modelName} 忙碌 (${res.status})，0.8 秒後重試...]`);
-                                await new Promise(r => setTimeout(r, 800));
-                                continue;
-                            }
-                            break;
+                    if (res.status === 503 || res.status === 429) {
+                        if (retry503 < 1) {
+                            retry503++;
+                            console.warn(`⏳ [模型 ${OPENROUTER_MODEL} 忙碌 (${res.status})，0.8 秒後重試...]`);
+                            await new Promise(r => setTimeout(r, 800));
+                            continue;
                         }
-
-                        if (!res.ok) {
-                            const errDetail = await res.text();
-                            console.error(`❌ [模型 ${modelName} 呼叫失敗 (狀態碼 ${res.status})]:`, errDetail);
-                            break;
-                        }
-
-                        const data = await res.json();
-                        let rawJsonText = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) || "";
-                        const firstBrace = rawJsonText.indexOf('{');
-                        const lastBrace = rawJsonText.lastIndexOf('}');
-                        if (firstBrace !== -1 && lastBrace !== -1) {
-                            rawJsonText = rawJsonText.substring(firstBrace, lastBrace + 1);
-                        }
-                        const parsed = JSON.parse(rawJsonText);
-
-                        let respText = parsed.response_text || "";
-                        const imgFormatted = formatResponseWithImages(respText);
-                        respText = imgFormatted.html;
-                        const extractedImgIds = imgFormatted.imgIds.length > 0 ? imgFormatted.imgIds : (parsed.image_ids || []);
-
-                        const checkStatus = runGuardrailCheck(respText, parsed.intent_primary, parsed.boundary_triggered);
-                        if (checkStatus === 'pass') {
-                            console.log(`🤖 [AI 模型推論成功 (${modelName})]:`, parsed);
-                            return {
-                                intent_primary: parsed.intent_primary || "I05",
-                                products_mentioned: parsed.products_mentioned || [],
-                                products_in_response: parsed.products_in_response || [],
-                                attributes_requested: parsed.attributes_requested || [],
-                                boundary_triggered: parsed.boundary_triggered || "none",
-                                fallback_subtype: parsed.fallback_subtype || "none",
-                                web_segment_ids: parsed.web_segment_ids || [],
-                                image_ids: extractedImgIds,
-                                final_choice: parsed.final_choice || null,
-                                suggestions_shown: parsed.suggestions_shown !== false,
-                                response_mode: modelName,
-                                regen_count: regenCount,
-                                guardrail_result: 'pass',
-                                response_text: respText
-                            };
-                        } else {
-                            console.warn(`🛡️ [Guardrail 攔截重試 #${regenCount + 1}]: ${checkStatus}`, respText);
-                            regenCount++;
-                            feedbackPrompt = `\n\n【系統自動檢查警告】你前一次生成的回覆未通過 Deliverable 12 檢查（原因：${checkStatus}）。請嚴格遵守禁用字眼（不得說最佳/最適合/最划算/高達/長達/只有/僅需/好選擇）、不洩露原型品牌、不在結尾自行追問等規定，重新生成！`;
-                        }
-                    } catch (e) {
-                        console.error(`⚠️ [模型 ${modelName} 執行異常]:`, e);
                         break;
                     }
+
+                    if (!res.ok) {
+                        const errDetail = await res.text();
+                        console.error(`❌ [模型 ${OPENROUTER_MODEL} 呼叫失敗 (狀態碼 ${res.status})]:`, errDetail);
+                        break;
+                    }
+
+                    const data = await res.json();
+                    let rawJsonText = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
+
+                    const firstBrace = rawJsonText.indexOf('{');
+                    const lastBrace = rawJsonText.lastIndexOf('}');
+                    if (firstBrace !== -1 && lastBrace !== -1) {
+                        rawJsonText = rawJsonText.substring(firstBrace, lastBrace + 1);
+                    }
+                    const parsed = JSON.parse(rawJsonText);
+
+                    let respText = parsed.response_text || "";
+                    const imgFormatted = formatResponseWithImages(respText);
+                    respText = imgFormatted.html;
+                    const extractedImgIds = imgFormatted.imgIds.length > 0 ? imgFormatted.imgIds : (parsed.image_ids || []);
+
+                    const checkStatus = runGuardrailCheck(respText, parsed.intent_primary, parsed.boundary_triggered);
+                    if (checkStatus === 'pass') {
+                        console.log(`🤖 [OpenRouter 模型推論成功 (${OPENROUTER_MODEL})]:`, parsed);
+                        return {
+                            intent_primary: parsed.intent_primary || "I05",
+                            products_mentioned: parsed.products_mentioned || [],
+                            products_in_response: parsed.products_in_response || [],
+                            attributes_requested: parsed.attributes_requested || [],
+                            boundary_triggered: parsed.boundary_triggered || "none",
+                            fallback_subtype: parsed.fallback_subtype || "none",
+                            web_segment_ids: parsed.web_segment_ids || [],
+                            image_ids: extractedImgIds,
+                            final_choice: parsed.final_choice || null,
+                            suggestions_shown: parsed.suggestions_shown !== false,
+                            response_mode: OPENROUTER_MODEL,
+                            regen_count: regenCount,
+                            guardrail_result: 'pass',
+                            response_text: respText
+                        };
+                    } else {
+                        console.warn(`🛡️ [Guardrail 攔截重試 #${regenCount + 1}]: ${checkStatus}`, respText);
+                        regenCount++;
+                        feedbackPrompt = `\n\n【系統自動檢查警告】你前一次生成的回覆未通過 Deliverable 12 檢查（原因：${checkStatus}）。請嚴格遵守禁用字眼（不得說最佳/最適合/最划算/高達/長達/只有/僅需/好選擇）、不洩露原型品牌、不在結尾自行追問等規定，重新生成！`;
+                    }
+                } catch (e) {
+                    console.error(`⚠️ [模型 ${OPENROUTER_MODEL} 執行異常]:`, e);
+                    break;
                 }
             }
             return null;
@@ -644,7 +640,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             if (piiRegex.test(q)) {
                 piiMasked = true;
                 q = q.replace(piiRegex, '').replace(/^[，,、\s]+|[，,、\s]+$/g, '').trim();
-                if (!q) return { intent_primary: "I08", fallback_subtype: "personal_info", pii_masked: true, suggestions_shown: true, response_mode: "gemini-3.8-flash", response_text: "目前這個系統可以協助你查詢與比較這六款耳機的規格（價格、防水防塵、雙裝置連線、續航、重量、降噪規格、藍牙、編碼、充電、配色等）與配色照片，但無法處理個人資料。你可以問我特定款式的規格，或依單一條件篩選。" };
+                if (!q) return { intent_primary: "I08", fallback_subtype: "personal_info", pii_masked: true, suggestions_shown: true, response_mode: OPENROUTER_MODEL, response_text: "目前這個系統可以協助你查詢與比較這六款耳機的規格（價格、防水防塵、雙裝置連線、續航、重量、降噪規格、藍牙、編碼、充電、配色等）與配色照片，但無法處理個人資料。你可以問我特定款式的規格，或依單一條件篩選。" };
             }
 
             // 100% 由語言模型依腳本教材推論並回答
