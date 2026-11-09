@@ -167,7 +167,7 @@
             </div>
         </div>
         <div class="input-bar">
-            <input id="chatInput" type="text" autocomplete="off" class="chat-input" placeholder="請輸入你想查詢的耳機規格或問題..." onkeypress="if(event.key === 'Enter') handleUserTyped()">
+            <input id="chatInput" type="text" autocomplete="off" class="chat-input" placeholder="請輸入你想查詢的耳機規格或問題（請勿輸入姓名、電話等個人資料）..." onkeypress="if(event.key === 'Enter') handleUserTyped()">
             <button id="sendBtn" onclick="handleUserTyped()" class="send-btn">送出</button>
         </div>
     </main>
@@ -241,7 +241,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
 2. 使用者說出自己的選擇（「我決定選 03」「我要選 Guava」「03 是對的吧」） → I12 (suggestions_shown: false)：
    - 宣告選擇：「收到，你目前的選擇是 {產品名稱}。如果已經確定，請到作答頁面提交；如果還想查詢其他資料，也可以繼續問我。」
    - 要求確認對錯：「系統沒有對錯判定，也不評估你的選擇。如果已經確定，請到作答頁面提交；如果想再核對 {產品名稱} 的規格，我可以列給你。」
-3. 一則訊息包含兩個以上條件、條件加排序（「7500 以下哪款最輕」），或貼上整段任務情境 → 多條件模板（I03, boundary_triggered: "multi_condition"），逐字回答：「我一次只能依一個條件篩選，或依一項規格排序，範圍都是全部六款。請從你的條件中選一個，我再幫你查詢。」；若同時要求推薦，前面加一句「我沒辦法替你挑選產品。」。不處理其中任何一項，也不複述條件。
+3. 一則訊息包含兩個以上條件、條件加排序（「7500 以下哪款最輕」）、貼上整段任務情境，或要求「照高副總／任務的三個淘汰條件幫我把不合格的刪掉」 → 多條件模板（I03, boundary_triggered: "multi_condition"），逐字回答：「我一次只能依一個條件篩選，或依一項規格排序，範圍都是全部六款。請從你的條件中選一個，我再幫你查詢。」；若同時要求推薦，前面加一句「我沒辦法替你挑選產品。」。不處理其中任何一項，也不複述條件（注意：前面不要加英文字母如 A）。
 4. 單一屬性排序 (I02) 與單一明確條件篩選 (I03)（範圍皆為全部六款）：
    - 【極重要！I02 排序固定句型】當使用者問「哪款最輕？」「哪款最便宜？」「哪款藍牙版本最新？」「開(關)降噪哪款最久？」（屬於 I02 排序，絕對不可用篩選格式回答，不可寫「未符合條件的原因如下：xxx 高於 xxx」）：
      * 問最輕：「在單耳重量方面，由輕到重排序：Sooglur Pixel Buds Pro 4（4.7 g）、JKT Live Beat 3（5.0 g）、Naiwa Buds Pro Wi-Fi（5.1 g）、H20 Neonlite 2（5.4 g）與 Tikkak-Audio X5（5.4 g）並列、Guava Go Pods3（5.5 g）。」
@@ -264,13 +264,16 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
    - 使用者講錯事實時（「03 不是 IP57 嗎？」「04 也可以雙裝置吧？」）→ 更正模板（I05, boundary_triggered: "correction"）：「根據產品資料，{產品名稱} 的{屬性}是 {MKB 值}。」
 7. 省略主詞的短問句（「那續航呢？」） → I09（前一輪是 I04/I05/I11 指定產品則沿用；前一輪是篩選或排序結果則重置以全部六款為範圍回答；點名集合外產品如「那 04 呢？」只回答該產品同一屬性）。
 8. 詢問任務內容、要求複述條件、詢問 AI 身分、表達情緒 → 對應固定回應（I08）：
-   - 問任務內容：「我沒有任務內容的資料，請回到任務說明查看。我可以協助你查詢與比較六款耳機的規格與配色照片。」(fallback_subtype: "task_info")
+   - 問任務內容（如「我的預算是多少？」「任務說明寫什麼？」）：「我沒有任務內容的資料，請回到任務說明查看。我可以協助你查詢與比較六款耳機的規格與配色照片。」(fallback_subtype: "task_info")
    - 要求複述或整理條件：「我不會替你整理或複述條件。你先前輸入的內容都保留在上方的對話紀錄中，可以往上查看。」(fallback_subtype: "task_info")
    - 問 AI 身分：「我是 AI 助理，不是真人。我可以協助你查詢與比較六款耳機的規格與配色照片。」(fallback_subtype: "identity")
    - 表達情緒：「了解。我可以協助你查詢與比較六款耳機的規格與配色照片，你可以從任何一項規格開始問。」(fallback_subtype: "out_of_scope")
 9. 空白、亂碼、無法辨識的輸入 → 「我沒有看懂這則訊息，請再輸入一次你想查詢的內容。」(suggestions_shown: false)。
 10. 【極重要！優先於 I08】詢問網路文章、評測或懶人包內容，詢問非候選產品（Soli WF-1000XM5、Tecnick EAH-AZ100），或詢問下方【網路資料庫 (WEB_KB)】涵蓋的一般使用知識（試聽調音/重低音/人聲、試戴注意/跑步會不會掉、單體大小與音質、藍牙版本與延遲、續航估算與快充、通話收音/ENC/cVc、ANC與環境音、IP等級與充電盒防水/游泳、加分功能/EQ/空間音訊、裝置相容性、耳機壽命用幾年、平價耳機、比較貴聲音就比較好嗎、連Wi-Fi、搭飛機、不見一耳補買） → 一律判為 I13！必須逐字引用【網路資料庫】對應段落，格式為「根據〈文章名稱〉：「段落原文」」，並將段落 ID 填入 web_segment_ids。若該段標示為(觀點)，引用後必加「以上為文章作者的觀點，系統不加以評論。」。
-    - 特別注意：若使用者問「戴著跑步會不會掉？」，請先說明「配戴是否穩固而不會掉落，需視個人耳型與實際試戴狀況而定，產品規格資料無法直接保證。」，接著再逐字引用〈New超狂懶人包，8種耳機推薦的耳機一次看完，根本佛心淚灑~〉的 [W1-B1] 段落供參考。
+    - 【Soli 與 Tecnick 必加聲明】：只要使用者問到 Soli WF-1000XM5 或 Tecnick EAH-AZ100（包含問「為什麼這兩款不在最後投票的六款裡面？」），或者你引用的文章段落中出現了 Soli WF-1000XM5 或 Tecnick EAH-AZ100（如 [W1-02]、[W2-61]），回覆中**必須明確說明：「Soli WF-1000XM5 與 Tecnick EAH-AZ100 僅出現在網路文章中，不在本次六款候選產品名單內。」**
+    - 【試聽與配戴自然回應導言】：
+      * 若使用者問「如果喜歡聽重低音或是人聲清楚的歌，去店裡試聽時要怎麼測？」，請先用一句話直接回答問題重點：「去店裡試聽時，測試人聲可播放熟悉的人聲曲目，留意咬字是否清楚、會不會被伴奏蓋住；測試重低音則可換節奏明顯的歌，留意鼓點量感與低音是否有份量或只剩轟聲。」，接著再逐字引用〈New超狂懶人包，8種耳機推薦的耳機一次看完，根本佛心淚灑~〉的 [W1-A3] 段落全文。
+      * 若使用者問「戴著跑步會不會掉？」，請先說明「配戴是否穩固而不會掉落，需視個人耳型與實際試戴狀況而定，產品規格資料無法直接保證。」，接著再逐字引用〈New超狂懶人包，8種耳機推薦的耳機一次看完，根本佛心淚灑~〉的 [W1-B1] 段落供參考。
 11. 以上皆非（例如直接問「這六款哪款音質最好？」「哪款戴起來最舒服？」「哪款最好看？」等針對候選耳機的主觀優劣比較，或問其他品牌 AirPods/Sony、購買通路、保固） → 判為 I08 Fallback：「目前這個系統可以協助你查詢與比較這六款耳機的規格（價格、防水防塵、雙裝置連線、續航、重量、降噪規格、藍牙、編碼、充電、配色等）與配色照片，但無法回答{超出範圍的主題}。你可以問我{1–2 個可問方向}。」
 
 【表格、圖片與追問按鈕專用標籤（必學教材）】
@@ -292,7 +295,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
 【核心回答邊界與禁用字（Deliverable 7 & 11）】
 - 單一屬性排序（I02）：只可排序價格、ANC 開／關單次續航、充電盒續航、單耳重量、防水防塵等級、藍牙版本。降噪強度、音質、編碼、單體不可排序，只列各款規格並說明「這幾款沒有共同的量化數據，所以系統無法排出強弱。」。
 - 衍生指標拒絕（如每小時成本、每克價格、綜合評分）：回答「系統只提供產品資料中的數值與兩個數值之間的差距，不計算每小時成本這類衍生指標。」
-- 資料未列欄位（Guava Go Pods3 是否支援無線充電、Tikkak-Audio X5 快充時間）：回「產品資料中 {產品} 列出的{相關屬性}是 {已列內容}，沒有列出{被問項目}，所以系統無法確認。」，不推測。
+- 資料未列欄位（如 Guava Go Pods3 是否支援無線充電、Tikkak-Audio X5 快充時間，或詢問這六款有無入耳偵測／取下自動暫停、盒裝隨附耳塞組數）：直接簡潔回答「產品資料中 {產品／這六款耳機} 沒有列出{被問項目}的相關資訊，所以系統無法確認。」，不推測，也不要附加冗長的無關文章段落。
 - 禁用字眼：禁止使用「最佳、最適合、最划算、CP 值最高、高達、長達、只有、僅需、值得注意的是、特別的是、亮點是、表現優異、較有優勢、比較吃虧、好選擇、明智、建議你」。
 - 結尾禁止自行追問：不得在結尾出現「要不要、要我幫你、你可能也想、下一步」等追問句型（澄清模板與點選選項反問除外）。
 
@@ -632,14 +635,15 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             return t;
         }
 
+        const PII_REGEX_PATTERN = /(?:我叫|我是|姓名)[:：]?\s*[^\s，,。]+|09\d{2}[-\s]?\d{3}[-\s]?\d{3}|09\d{2}x+|\b[A-Z][12]\d{8}\b|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|電話\s*[0-9xX\-]+/gi;
+
         async function processUserQuery(rawText) {
             let q = applyTypoMap(rawText.trim().replace(/？/g, '?').replace(/！/g, '!'));
 
             let piiMasked = false;
-            const piiRegex = /(?:我叫|我是|姓名)[:：]?\s*[^\s，,。]+|09\d{2}[-\s]?\d{3}[-\s]?\d{3}|09\d{2}x+|\b[A-Z][12]\d{8}\b|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|電話\s*[0-9xX\-]+/gi;
-            if (piiRegex.test(q)) {
+            if (PII_REGEX_PATTERN.test(q)) {
                 piiMasked = true;
-                q = q.replace(piiRegex, '').replace(/^[，,、\s]+|[，,、\s]+$/g, '').trim();
+                q = q.replace(PII_REGEX_PATTERN, '').replace(/^[，,、\s]+|[，,、\s]+$/g, '').trim();
                 if (!q) return { intent_primary: "I08", fallback_subtype: "personal_info", pii_masked: true, suggestions_shown: true, response_mode: OPENROUTER_MODEL, response_text: "目前這個系統可以協助你查詢與比較這六款耳機的規格（價格、防水防塵、雙裝置連線、續航、重量、降噪規格、藍牙、編碼、充電、配色等）與配色照片，但無法處理個人資料。你可以問我特定款式的規格，或依單一條件篩選。" };
             }
 
@@ -718,7 +722,10 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             const guardrailStatus = result.guardrail_result || runGuardrailCheck(result.response_text, result.intent_primary, result.boundary_triggered);
             const finalResponseText = guardrailStatus === 'pass' ? result.response_text : "系統暫時無法回應，請再輸入一次。";
 
-            conversationHistory.push({ role: 'user', text: userText });
+            // 依計畫書第 7 節與第 13 節：對話紀錄儲存前遮蔽可辨識個資內容
+            const safeUserMessage = result.pii_masked ? userText.replace(PII_REGEX_PATTERN, '[已遮蔽個資]') : userText;
+
+            conversationHistory.push({ role: 'user', text: safeUserMessage });
             conversationHistory.push({ role: 'ai', text: finalResponseText.replace(/<[^>]*>?/gm, ' ').trim() });
 
             removeAITypingBubble();
@@ -729,7 +736,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             document.getElementById('chatInput').focus();
 
             logAIMessage({
-                turn_number: turnCounter, user_message: userText, response_text: finalResponseText,
+                turn_number: turnCounter, user_message: safeUserMessage, response_text: finalResponseText,
                 intent_primary: result.intent_primary, response_mode: result.response_mode, latency_ms: latency,
                 products_mentioned: result.products_mentioned, products_in_response: result.products_in_response,
                 attributes_requested: result.attributes_requested, boundary_triggered: result.boundary_triggered,
@@ -869,7 +876,8 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             const pId = localStorage.getItem('participant_id') || 'U000';
             const prefilledSurveyUrl = `https://docs.google.com/forms/d/e/1FAIpQLSfVb52zLqIn0T8FsV5o1hyJ-VkydwJHgii41-N_wWDVblkHWQ/viewform?usp=pp_url&entry.330827761=${encodeURIComponent(pId)}`;
 
-            alert(`🎉 產品選擇已成功送出！\n\n接下來將自動為您跳轉至簡短的後測問卷（系統已自動帶入您的受試者編號：${pId}），填寫完畢即完成整場實驗！`);
+            // 依計畫書第 6.1 節：任務後不先顯示答案或歡慶暗示，以免影響信心與信任評分
+            alert(`產品選擇已送出。\n\n接下來將自動為您跳轉至簡短的後測問卷（系統已自動帶入您的受試者編號：${pId}），填寫完畢即完成整場實驗。`);
             closeFinalChoiceModal();
             window.location.href = prefilledSurveyUrl;
         }
