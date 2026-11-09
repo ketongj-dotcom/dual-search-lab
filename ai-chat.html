@@ -191,16 +191,44 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script>
-        const API_BASE = 'http://localhost:3000/api';
-        // OpenRouter 設定：API Base URL、分段拼接金鑰（避免 GitHub 掃描攔截）、Model ID
-        const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-        const DEFAULT_OPENROUTER_KEY = "sk-or-v1-9a3e747ff7ab3350cdef1f" + "90f803511df660d55a540468" + "12b4a4a08afa2045b2";
-        const OPENROUTER_MODEL = "google/gemini-3.8-flash";
-
-        // 清除可能殘留的舊 localStorage key
-        if (localStorage.getItem('gemini_api_key')) {
-            localStorage.removeItem('gemini_api_key');
+        const SUPABASE_URL = 'https://chetadmpaznljjmfhbmq.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_O4eiEj9gvZVX0Bk4c98HFw_NKOObKMz';
+        const eventClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+        const FUNCTION_BASE = `${SUPABASE_URL}/functions/v1`;
+        const OPENROUTER_MODEL = 'google/gemini-3.8-flash'; // Only for display; server controls actual model.
+        let backendReady = false;
+        let pendingLogs = [];
+        let loggingFailed = false;
+        async function getAuthToken() {
+            if (!backendReady) throw new Error('實驗身分尚未驗證，請從 index.html 重新開始。');
+            const {data,error} = await eventClient.auth.getSession();
+            if (error || !data.session) throw new Error('匿名登入已失效，請從實驗入口重新開始。');
+            return data.session.access_token;
+        }
+        async function callFunction(name, payload) {
+            const token = await getAuthToken();
+            const res = await fetch(`${FUNCTION_BASE}/${name}`, {method:'POST', headers:{'Content-Type':'application/json', apikey:SUPABASE_PUBLISHABLE_KEY, Authorization:`Bearer ${token}`}, body:JSON.stringify(payload)});
+            const data = await res.json().catch(()=>({}));
+            if (!res.ok || data.error || data.success === false) throw new Error(data.error || `${name} HTTP ${res.status}`);
+            return data;
+        }
+        async function verifyAIIdentity() {
+            const pid = localStorage.getItem('participant_id'), sid = localStorage.getItem('session_id');
+            if (!pid || !sid || localStorage.getItem('condition') !== 'ai') throw new Error('找不到 AI 組實驗身分，請從 index.html 重新開始。');
+            const {data:auth,error:authError} = await eventClient.auth.getSession();
+            if (authError || !auth.session || !auth.session.user?.is_anonymous) throw new Error('找不到有效的匿名登入，請從 index.html 重新開始。');
+            const {data, error} = await eventClient.rpc('get_participant_info');
+            const rows = Array.isArray(data) ? data : (data ? [data] : []);
+            if (error || !rows.some(x=>x.participant_id === pid && x.condition === 'ai')) throw new Error('AI 組受試者資料不符合目前登入身分。');
+            backendReady = true;
+            document.getElementById('introConfirmBtn').disabled = false;
+        }
+        async function initBackend() {
+            document.getElementById('introConfirmBtn').disabled = true;
+            try { await verifyAIIdentity(); }
+            catch(e) { console.error(e); alert('無法進入實驗：'+e.message); document.getElementById('storyNextBtn').disabled = true; }
         }
 
         // Deliverable 0｜MKB 核准事實表
@@ -382,35 +410,32 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             });
         }
 
-        if (!localStorage.getItem('participant_id')) localStorage.setItem('participant_id', 'U' + Math.floor(1000 + Math.random() * 9000));
-        if (!localStorage.getItem('session_id')) localStorage.setItem('session_id', generateUUID());
-        localStorage.setItem('condition', 'ai');
-
+        const EVENT_TYPE_MAP = {task_start:'task_start', submit_choice:'final_choice_submit'};
         async function logEvent(eventType, targetId, metadata = {}) {
-            const currentDevice = window.innerWidth <= 768 ? 'mobile' : 'desktop';
-            const eventData = { event_id: generateUUID(), session_id: localStorage.getItem('session_id'), participant_id: localStorage.getItem('participant_id'), condition: 'ai', device: currentDevice, event_type: eventType, target_id: targetId, event_time: new Date().toISOString(), metadata: { device: currentDevice, ...metadata } };
-            console.log('📊 [API 傳送 -> log-event]:', eventData);
-            try { await fetch(`${API_BASE}/log-event`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(eventData) }); } catch (e) {}
+            const mapped = EVENT_TYPE_MAP[eventType];
+            if (!mapped) return null; // Other event types not supported by existing backend.
+            return callFunction('log-event', {session_id:localStorage.getItem('session_id'), event_type:mapped, target_id:targetId, metadata});
         }
-
         async function logAIMessage(logObj) {
-            const aiMsgData = {
-                message_id: generateUUID(), session_id: localStorage.getItem('session_id'), participant_id: localStorage.getItem('participant_id'),
-                turn_number: logObj.turn_number, user_message: logObj.user_message, response_text: logObj.response_text.replace(/<[^>]*>?/gm, ' ').trim(),
-                intent_id: logObj.intent_primary, response_mode: logObj.response_mode, response_latency_ms: logObj.latency_ms,
-                metadata: {
-                    participant_id: localStorage.getItem('participant_id'), condition: 'AI', turn_id: logObj.turn_number, timestamp: new Date().toISOString(),
-                    intent_primary: logObj.intent_primary, intent_secondary: logObj.intent_secondary || [], products_mentioned: logObj.products_mentioned || [],
-                    products_in_response: logObj.products_in_response || [], attributes_requested: logObj.attributes_requested || [],
-                    boundary_triggered: logObj.boundary_triggered || 'none', fallback_subtype: logObj.fallback_subtype || 'none',
-                    image_ids: logObj.image_ids || [], final_choice: logObj.final_choice || null, input_type: logObj.input_type,
-                    chip_clicked: logObj.chip_clicked || null, suggestions_shown: logObj.suggestions_shown, guardrail_result: logObj.guardrail_result || 'pass',
-                    regen_count: logObj.regen_count || 0, error_flag: logObj.error_flag || 'none', model_version: logObj.response_mode || OPENROUTER_MODEL, prompt_version: 'SP-v1.0/MKB-v2.1',
-                    pii_masked: logObj.pii_masked || false, web_segment_ids: logObj.web_segment_ids || []
-                }
+            const payload = {
+                session_id:localStorage.getItem('session_id'), turn_number:logObj.turn_number,
+                user_message:logObj.user_message,
+                response_text:logObj.response_text.replace(/<[^>]*>?/gm,' ').trim(),
+                intent_id:logObj.intent_primary || null,
+                response_mode: logObj.response_mode === 'fixed' ? 'fixed' : 'api',
+                model_version: OPENROUTER_MODEL, prompt_version:'SP-v1.0/MKB-v2.1',
+                response_latency_ms:logObj.latency_ms,
+                error_flag: Boolean(logObj.error_flag && logObj.error_flag !== 'none'),
+                metadata:{input_type:logObj.input_type, chip_clicked:logObj.chip_clicked,
+                    boundary_triggered:logObj.boundary_triggered, guardrail_result:logObj.guardrail_result,
+                    products_mentioned:logObj.products_mentioned, web_segment_ids:logObj.web_segment_ids}
             };
-            console.log('💬 [API 傳送 -> log-ai-message]:', aiMsgData);
-            try { await fetch(`${API_BASE}/log-ai-message`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(aiMsgData) }); } catch (e) {}
+            return callFunction('log-ai-message', payload);
+        }
+        function reportLog(promise) {
+            pendingLogs.push(promise);
+            promise.catch(e=>{loggingFailed = true; console.error('後端紀錄失敗:',e); alert('資料儲存失敗，請暫停實驗並通知研究人員：'+e.message);})
+                .finally(()=>{pendingLogs=pendingLogs.filter(p=>p!==promise);});
         }
 
         // Deliverable 12｜輸出前自動檢查（排除術語表合法定義與文章引用原文，避免誤殺）
@@ -511,10 +536,6 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
         }
 
         async function askLearningAI(userQuery) {
-            const rawKey = localStorage.getItem('openrouter_api_key') || DEFAULT_OPENROUTER_KEY || '';
-            const activeKey = Array.isArray(rawKey) ? rawKey.join('') : String(rawKey).trim();
-            if (!activeKey) return null;
-
             const contextNote = `【當前多輪對話狀態】
 - 前一輪產品範圍類型 (lastContextType): ${lastContextType === "specified" ? `使用者指定產品 (${specifiedProducts.join('、')})` : "全部六款（若使用者省略主詞追問，請以全部六款為範圍回答）"}
 - 前一輪詢問的屬性 (lastAttributeAsked): ${lastAttributeAsked || "無"}`;
@@ -529,38 +550,8 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
                 try {
                     const fullPrompt = `${AI_SCRIPT_PROMPT}\n\n${contextNote}\n\n【近期對話紀錄】\n${recentHistoryText || "（此為第一輪提問）"}\n\n【本輪使用者問題】\n「${userQuery}」${feedbackPrompt}`;
 
-                    const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${activeKey}`
-                        },
-                        body: JSON.stringify({
-                            model: OPENROUTER_MODEL,
-                            messages: [{ role: 'user', content: fullPrompt }],
-                            response_format: { type: 'json_object' },
-                            temperature: 0.0
-                        })
-                    });
-
-                    if (res.status === 503 || res.status === 429) {
-                        if (retry503 < 1) {
-                            retry503++;
-                            console.warn(`⏳ [模型 ${OPENROUTER_MODEL} 忙碌 (${res.status})，0.8 秒後重試...]`);
-                            await new Promise(r => setTimeout(r, 800));
-                            continue;
-                        }
-                        break;
-                    }
-
-                    if (!res.ok) {
-                        const errDetail = await res.text();
-                        console.error(`❌ [模型 ${OPENROUTER_MODEL} 呼叫失敗 (狀態碼 ${res.status})]:`, errDetail);
-                        break;
-                    }
-
-                    const data = await res.json();
-                    let rawJsonText = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
+                    const data = await callFunction('ai-chat', {session_id:localStorage.getItem('session_id'), prompt:fullPrompt});
+                    let rawJsonText = data.content || '';
 
                     const firstBrace = rawJsonText.indexOf('{');
                     const lastBrace = rawJsonText.lastIndexOf('}');
@@ -707,7 +698,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             if (!userText.trim()) return;
             turnCounter++;
             const t0 = performance.now();
-            appendMessageBubble('user', userText);
+            appendMessageBubble('user', userText.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'));
             document.getElementById('chatInput').value = '';
             document.getElementById('sendBtn').disabled = true;
 
@@ -728,7 +719,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             document.getElementById('sendBtn').disabled = false;
             document.getElementById('chatInput').focus();
 
-            logAIMessage({
+            reportLog(logAIMessage({
                 turn_number: turnCounter, user_message: userText, response_text: finalResponseText,
                 intent_primary: result.intent_primary, response_mode: result.response_mode, latency_ms: latency,
                 products_mentioned: result.products_mentioned, products_in_response: result.products_in_response,
@@ -738,7 +729,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
                 suggestions_shown: result.suggestions_shown, guardrail_result: guardrailStatus,
                 regen_count: result.regen_count || 0, error_flag: result.error_flag || (guardrailStatus === 'pass' ? 'none' : 'guardrail_blocked'),
                 pii_masked: result.pii_masked, web_segment_ids: result.web_segment_ids
-            });
+            }));
         }
 
         function handleUserTyped() {
@@ -791,7 +782,7 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
                 hasInitializedGreeting = true;
                 localStorage.setItem('task_start_time', Date.now());
                 localStorage.setItem('started_at', new Date().toISOString());
-                logEvent('task_start', 'enter_ai_chat');
+                reportLog(logEvent('task_start', 'enter_ai_chat'));
                 document.getElementById('introConfirmBtn').innerHTML = '關閉說明，回到畫面繼續找 &rarr;';
                 const openingGreeting = "你好，我可以幫你查詢與比較六款藍牙耳機（H20 Neonlite 2、Sooglur Pixel Buds Pro 4、Guava Go Pods3、JKT Live Beat 3、Naiwa Buds Pro Wi-Fi、Tikkak-Audio X5）的規格與配色照片，也可以解釋相關術語。請問想先了解什麼？";
                 appendMessageBubble('ai', openingGreeting);
@@ -836,43 +827,26 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             const startTime = Number(localStorage.getItem('task_start_time') || Date.now());
             const durationSec = Math.round((Date.now() - startTime) / 1000);
 
-            await logEvent('submit_choice', choice, {
-                brand_name: brandName,
-                hard_constraints_met: hardConstraintsMet,
-                choice_correct: isCorrect,
-                error_type: errorTypeMap[choice],
-                duration_sec: durationSec,
-                total_turns: turnCounter
-            });
-
-            const finishPayload = {
-                session_id: localStorage.getItem('session_id'),
-                participant_id: localStorage.getItem('participant_id'),
-                condition: 'ai',
-                device: currentDevice,
-                ended_at: new Date().toISOString(),
-                final_choice: choice,
-                hard_constraints_met: hardConstraintsMet,
-                choice_correct: isCorrect,
-                duration_sec: durationSec,
-                status: 'completed'
-            };
-            console.log('✅ [API 傳送 -> finish-experiment]:', finishPayload);
+            const submitBtn = document.querySelector('#choiceModal button[onclick="submitFinalChoice()"]');
+            submitBtn.disabled = true;
             try {
-                await fetch(`${API_BASE}/finish-experiment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(finishPayload)
-                });
-            } catch (e) {}
-
-            const pId = localStorage.getItem('participant_id') || 'U000';
-            const prefilledSurveyUrl = `https://docs.google.com/forms/d/e/1FAIpQLSfVb52zLqIn0T8FsV5o1hyJ-VkydwJHgii41-N_wWDVblkHWQ/viewform?usp=pp_url&entry.330827761=${encodeURIComponent(pId)}`;
-
-            alert(`🎉 產品選擇已成功送出！\n\n接下來將自動為您跳轉至簡短的後測問卷（系統已自動帶入您的受試者編號：${pId}），填寫完畢即完成整場實驗！`);
-            closeFinalChoiceModal();
-            window.location.href = prefilledSurveyUrl;
+                await Promise.all(pendingLogs);
+                if (loggingFailed) throw new Error('先前有對話或事件紀錄失敗');
+                await logEvent('submit_choice', choice, {brand_name:brandName, error_type:errorTypeMap[choice], duration_sec:durationSec});
+                const {data,error} = await eventClient.rpc('complete_experiment', {p_session_id:localStorage.getItem('session_id'), p_final_choice:choice});
+                if (error) throw error;
+                const completed = Array.isArray(data) ? data[0] : data;
+                if (!completed || completed.result_status !== 'completed') throw new Error('後端尚未確認完成狀態');
+                const pId = localStorage.getItem('participant_id');
+                const url = `https://docs.google.com/forms/d/e/1FAIpQLSfVb52zLqIn0T8FsV5o1hyJ-VkydwJHgii41-N_wWDVblkHWQ/viewform?usp=pp_url&entry.330827761=${encodeURIComponent(pId)}`;
+                alert('產品選擇已成功儲存，接下來前往後測問卷。');
+                window.location.href = url;
+            } catch(e) {
+                console.error('完成實驗失敗',e);
+                alert('資料尚未確認儲存成功，不會跳轉問卷。請通知研究人員：'+e.message);
+            } finally {submitBtn.disabled=false;}
         }
+        void initBackend();
     </script>
 </body>
 </html>
