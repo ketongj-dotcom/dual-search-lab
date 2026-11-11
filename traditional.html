@@ -52,6 +52,36 @@
         button { cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; } button:hover { opacity: 0.92; } input[type="text"] { outline: none; font-family: inherit; border: none; }
         .cursor-pointer { cursor: pointer; } .select-none { user-select: none; } .overflow-hidden { overflow: hidden; } .overflow-y-auto { overflow-y: auto; } .overflow-x-auto { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; } th { background-color: #f8fafc; font-weight: 700; }
+
+        /* 右上角浮動白底記事本樣式 */
+        #notepadPanel {
+            position: fixed;
+            top: 52px;
+            right: 16px;
+            width: 320px;
+            max-width: calc(100vw - 32px);
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.25);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #notepadTextarea {
+            width: 100%;
+            height: 220px;
+            background-color: #ffffff;
+            color: #1e293b;
+            border: none;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+        }
     </style>
 </head>
 <body class="bg-white text-slate-800 min-h-screen flex flex-col">
@@ -134,11 +164,28 @@
                 </button>
                 <span><strong>7,500塊以內、IP54防塵防水、多點連線；先比開降噪單次續航，續航平手才比價格，價格再平手才比單耳重量</strong></span>
             </div>
-            <button onclick="openFinalChoiceModal()" class="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs">
-                決定好了，提交最終選擇 &rarr;
-            </button>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="toggleNotepad()" class="bg-white text-slate-900 font-bold px-3 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs border border-slate-300 shadow-sm flex items-center gap-1">
+                    📝 記事本
+                </button>
+                <button onclick="openFinalChoiceModal()" class="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg cursor-pointer shrink-0 text-xs">
+                    決定好了，提交最終選擇 &rarr;
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- 右上角彈出式白底記事本視窗 (按右上角按鈕可縮小) -->
+    <div id="notepadPanel" class="hidden">
+        <div class="bg-slate-100 border-b border-slate-200 px-3.5 py-2 flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1">📝 隨手記事本</span>
+            <div class="flex items-center gap-1.5">
+                <button onclick="clearNotepad()" class="text-[11px] text-slate-500 hover:text-red-600 px-1.5 py-0.5 rounded bg-white border border-slate-200 cursor-pointer" title="清空筆記">清空</button>
+                <button onclick="toggleNotepad(false)" class="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-0.5 rounded cursor-pointer" title="縮小記事本">&#8212; 縮小</button>
+            </div>
+        </div>
+        <textarea id="notepadTextarea" placeholder="可在此自由打字記錄各款耳機的價格、IP等級、多點連線或續航比較...（內容會自動暫存）" oninput="saveNotepadContent(this.value)"></textarea>
+    </div>
 
     <!-- Yaho! 初始大首頁 (搜尋框無預設提示詞) -->
     <div id="yahoHomeHero" class="flex-1 flex flex-col items-center justify-center p-6 -mt-10 bg-slate-50">
@@ -246,9 +293,14 @@
                     <span>🔒</span>
                     <span id="modalDomainText" class="truncate">https://example.com</span>
                 </div>
-                <button onclick="closeDocumentModal(); openFinalChoiceModal();" class="bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs cursor-pointer shrink-0 shadow-sm">
-                    提交選擇 &rarr;
-                </button>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button onclick="toggleNotepad()" class="bg-white text-slate-800 border border-slate-300 font-bold px-2.5 py-1.5 rounded-lg text-xs cursor-pointer shrink-0 shadow-sm">
+                        📝 記事本
+                    </button>
+                    <button onclick="closeDocumentModal(); openFinalChoiceModal();" class="bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs cursor-pointer shrink-0 shadow-sm">
+                        提交選擇 &rarr;
+                    </button>
+                </div>
             </div>
             <div id="modalContent" class="flex-1 bg-slate-100 overflow-y-auto"></div>
         </div>
@@ -275,6 +327,38 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script>
+        // 右上角記事本控制函式
+        function toggleNotepad(forceState) {
+            const panel = document.getElementById('notepadPanel');
+            if (!panel) return;
+            const shouldOpen = typeof forceState === 'boolean' ? forceState : panel.classList.contains('hidden');
+            if (shouldOpen) {
+                panel.classList.remove('hidden');
+                const ta = document.getElementById('notepadTextarea');
+                if (ta) ta.focus();
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+        function saveNotepadContent(val) {
+            try { localStorage.setItem('yaho_experiment_notes', val); } catch (e) {}
+        }
+        function clearNotepad() {
+            const ta = document.getElementById('notepadTextarea');
+            if (ta && confirm('確定要清空記事本內容嗎？')) {
+                ta.value = '';
+                saveNotepadContent('');
+                ta.focus();
+            }
+        }
+        (function initNotepad() {
+            try {
+                const saved = localStorage.getItem('yaho_experiment_notes');
+                const ta = document.getElementById('notepadTextarea');
+                if (saved && ta) ta.value = saved;
+            } catch (e) {}
+        })();
+
         // Supabase backend integration. The public publishable key is safe for browser use.
         const SUPABASE_URL = 'https://chetadmpaznljjmfhbmq.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_O4eiEj9gvZVX0Bk4c98HFw_NKOObKMz';
@@ -939,7 +1023,7 @@
                 content: `<div class="bg-slate-50 min-h-full text-slate-800 pb-12"><div class="bg-slate-900 text-white px-6 py-3.5 flex justify-between items-center text-xs font-bold"><span>耳機選購指南</span><span class="text-slate-400">無線耳機推薦 / 懶人包</span></div><article class="max-w-4xl mx-auto bg-white shadow-sm border p-6 sm:p-10 mt-4 rounded-xl space-y-6"><section class="space-y-3"><div class="text-xs text-slate-400">首頁 &rsaquo; 選購指南 &rsaquo; 無線耳機推薦</div><h1 class="text-2xl sm:text-3xl font-black text-slate-900">New超狂懶人包，4種耳機推薦的耳機一次看完，根本佛心淚灑~</h1><div class="text-xs text-slate-400 pb-2 border-b">選購推薦 ｜ 無線耳機專題整理</div><p class="text-sm text-slate-700 leading-relaxed">耳機一搜下去，每款都在喊降噪、長續航、高音質，看到最後只剩一個問題：所以我到底該買哪一副？這篇直接把四款無線耳機的重點攤開來看！</p><h2 class="text-lg font-extrabold text-slate-900">精選速覽：先找出你的那一款</h2><table class="text-xs sm:text-sm"><thead><tr class="bg-slate-100"><th>型號 / 參考售價</th><th>推薦族群</th><th>推薦原因</th></tr></thead><tbody><tr><td><strong class="text-sky-700">Sooglur Pixel Buds Pro 4</strong><br>NT$7,490</td><td>通勤、工作切換</td><td>單耳 4.7g、多點連線，兼顧日常便利</td></tr><tr><td><strong class="text-sky-700">Guava Go Pods3</strong><br>NT$5,990</td><td>預算有限、多裝置使用</td><td>四款中價格較低，仍有 ANC、多點連線與 IP54</td></tr><tr><td><strong class="text-sky-700">JKT Live Beat 3</strong><br>NT$7,490</td><td>偏好長續航、特色充電盒</td><td>觸控彩色螢幕充電盒，ANC 開啟約 9 小時</td></tr><tr><td><strong class="text-sky-700">Tikkak-Audio X5</strong><br>NT$7,980</td><td>在意編碼、充電盒功能</td><td>aptX Adaptive、多點連線，充電盒具深紫外線殺菌功能</td></tr></tbody></table></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">01 / 輕巧通勤派</div><h2 class="text-xl font-black">Sooglur Pixel Buds Pro 4 — 手機、電腦都要顧到，耳朵也想少點負擔</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A02_米.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">米</div></div><div>${imgTag('A02_綠.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">綠</div></div><div>${imgTag('A02_灰.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">灰</div></div><div>${imgTag('A02_粉.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">粉</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜4.7g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>音訊編碼</strong>｜AAC、SBC、Opus</div><div><strong>單體</strong>｜11mm 訂製動圈</div><div><strong>降噪</strong>｜Silent Seal 2.0 ANC</div><div><strong>單次續航</strong>｜ANC 開 8 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 30 小時（未列 ANC 條件）</div><div><strong>充電</strong>｜Qi 無線充電</div><div><strong>快充</strong>｜5 分鐘用 1.5 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ 單耳 4.7g 較輕；+ 支援多點連線與 Qi 無線充電。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 無 LDAC 或 aptX；− IP54 防塵防潑水但不能游泳。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">02 / 預算務實派</div><h2 class="text-xl font-black">Guava Go Pods3 — 想把錢花在常用功能，這副值得先看</h2><div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A03_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A03_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div><div>${imgTag('A03_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$5,990</div><div><strong>單耳重量</strong>｜5.5g；<strong>防護</strong>｜IP54</div><div><strong>連線</strong>｜Bluetooth 5.3，支援多點連線</div><div><strong>音訊編碼</strong>｜aptX、AAC、SBC、LC3</div><div><strong>單體</strong>｜7mm TrueResponse 動圈</div><div><strong>降噪</strong>｜Hybrid ANC 混合式主動降噪</div><div><strong>單次續航</strong>｜ANC 開約 8 小時／關 11 小時</div><div><strong>含盒續航</strong>｜最高 28 小時</div><div><strong>充電</strong>｜Type-C</div><div><strong>快充</strong>｜10 分鐘用 1 小時</div></div><div class="text-xs"><strong class="text-emerald-700">☑️ 推薦原因：</strong>+ NT$5,990 好入手；+ 多點連線、ANC 與 IP54 都有列入規格。<strong class="text-amber-800 ml-2">🔎 注意事項：</strong>− 單耳 5.5g 是四款中較重的一款。</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">03 / 功能控看這裡</div><h2 class="text-xl font-black">JKT Live Beat 3 — 充電盒有螢幕，續航數字也很有看頭</h2><div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-3 rounded-xl"><div>${imgTag('A04_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A04_藍.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">藍</div></div><div>${imgTag('A04_銀.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">銀</div></div><div>${imgTag('A04_紫.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">紫</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜NT$7,490</div><div><strong>單耳重量</strong>｜5.0g；<strong>防護</strong>｜IP55</div><div><strong>連線</strong>｜Bluetooth 5.3，<span class="text-red-600 font-bold">不支援多點連線</span></div><div><strong>音訊編碼</strong>｜LDAC、AAC、SBC</div><div><strong>單次續航</strong>｜ANC 開約 9 小時／關 12 小時</div><div><strong>含盒續航</strong>｜最高 36 小時（觸控彩色螢幕盒）</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：不支援多點連線，每天在手機和筆電之間切換的人要留意！</div></section><hr><section class="space-y-2"><div class="text-xs text-slate-400 font-bold">04 / 特色配備派</div><h2 class="text-xl font-black">Tikkak-Audio X5 — 把焦點放在編碼支援與充電盒設計</h2><div class="grid grid-cols-2 gap-2 text-center bg-slate-50 p-3 rounded-xl max-w-md mx-auto"><div>${imgTag('A06_黑.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">黑</div></div><div>${imgTag('A06_白.png','w-24 h-24 object-contain mx-auto')}<div class="text-xs">白</div></div></div><div class="bg-slate-50 border rounded-lg p-3 text-xs grid grid-cols-1 sm:grid-cols-2 gap-1.5"><div><strong>參考售價</strong>｜<span class="text-red-600 font-bold">NT$7,980</span></div><div><strong>單耳重量</strong>｜5.4g；<strong>防護</strong>｜<span class="text-red-600 font-bold">IPX4</span></div><div><strong>連線</strong>｜Bluetooth 5.4，支援多點連線</div><div><strong>單次續航</strong>｜ANC 開 6 小時／關 7.5 小時</div></div><div class="text-xs text-red-600 font-bold">🔎 注意事項：ANC 開啟 6 小時；IPX4 未列防塵等級；售價 NT$7,980 也是四款中較高。</div></section><hr><section class="space-y-2 text-xs"><h2 class="text-base font-black">05 / IP 防塵防水解讀 & 常見問題 FAQ</h2><p>IP 後第一個位置看固體異物防護（防塵），第二個看進水防護（防水）；<strong>X 代表沒有列出該項等級</strong>：</p><table class="text-xs"><thead><tr class="bg-slate-100"><th>等級與本篇產品</th><th>重點解讀</th></tr></thead><tbody><tr><td class="font-bold text-emerald-700">IP54｜Sooglur、Guava</td><td>具防塵與防潑水等級。</td></tr><tr><td class="font-bold text-emerald-700">IP55｜JKT</td><td>具防塵與水柱測試等級（但 JKT 不支援多點連線）。</td></tr><tr><td class="font-bold text-red-600">IPX4｜Tikkak-Audio</td><td>列有防潑水等級；<strong>沒有列出防塵等級</strong>。</td></tr></tbody></table></section></article></div>`
             },
 
-            // [部落格 2/2] 五款無線耳機續航評比與選購推薦
+           // [部落格 2/2] 五款無線耳機續航評比與選購推薦
             {
                 id: "blog_office_multipoint",
                 icon: "💻",
@@ -1035,7 +1119,7 @@
             document.getElementById('heroSearchInput').focus();
         }
 
-       // 修正搜尋邏輯：必須命中有效關鍵字（如耳機、earphone、型號或規格）才顯示結果，亂打字則顯示查無資料
+        // 修正搜尋邏輯：必須命中有效關鍵字（如耳機、earphone、型號或規格）才顯示結果，亂打字則顯示查無資料
         function executeSearch(rawQuery) {
             const tokens = rawQuery.toLowerCase().split(/\s+/).filter(Boolean);
             let matched = [];
@@ -1083,6 +1167,7 @@
                 renderSerp(matched, tokens);
             }
         }
+
         function renderSerp(list, tokens) {
             const container = document.getElementById('serpContainer');
             container.innerHTML = list.map((page) => {
