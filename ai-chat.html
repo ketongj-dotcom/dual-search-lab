@@ -390,7 +390,14 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
             });
         }
 
-        const EVENT_TYPE_MAP = {task_start:'task_start', submit_choice:'final_choice_submit'};
+        
+const EVENT_TYPE_MAP = {
+  task_start: 'task_start',
+  ai_question_submit: 'ai_question_submit',
+  submit_choice: 'final_choice_submit',
+  task_end: 'task_end'
+};
+
         async function logEvent(eventType, targetId, metadata = {}) {
             const mapped = EVENT_TYPE_MAP[eventType];
             if (!mapped) return null; // Other event types not supported by existing backend.
@@ -677,6 +684,12 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
         async function executeChatTurn(userText, inputType, chipClicked = null) {
             if (!userText.trim()) return;
             turnCounter++;
+            // Each submitted question is recorded as an event, independently of its AI response log.
+            reportLog(logEvent('ai_question_submit', inputType === 'chip' ? 'suggestion_chip' : 'ai_chat_input', {
+                turn_number: turnCounter,
+                input_type: inputType,
+                ...(chipClicked ? {chip_clicked: chipClicked} : {})
+            }));
             const t0 = performance.now();
             appendMessageBubble('user', userText.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'));
             document.getElementById('chatInput').value = '';
@@ -813,6 +826,9 @@ AI 回覆一律使用完整產品名稱，除依使用者指定的屬性排序�
                 await Promise.all(pendingLogs);
                 if (loggingFailed) throw new Error('先前有對話或事件紀錄失敗');
                 await logEvent('submit_choice', choice, {brand_name:brandName, error_type:errorTypeMap[choice], duration_sec:durationSec});
+                await logEvent('task_end', choice, {
+  duration_sec: durationSec
+});
                 const {data,error} = await eventClient.rpc('complete_experiment', {p_session_id:localStorage.getItem('session_id'), p_final_choice:choice});
                 if (error) throw error;
                 const completed = Array.isArray(data) ? data[0] : data;
